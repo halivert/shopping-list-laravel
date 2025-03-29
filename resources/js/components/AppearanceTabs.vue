@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import { useAppearance } from '@/composables/useAppearance';
-import { Monitor, Moon, Sun } from 'lucide-vue-next';
+import { useAppearance } from "@/composables/useAppearance"
+import { Monitor, Moon, Sun } from "lucide-vue-next"
 
 interface Props {
-    class?: string;
+    class?: string
 }
 
-const { class: containerClass = '' } = defineProps<Props>();
+const { class: containerClass = "" } = defineProps<Props>()
 
-const { appearance, updateAppearance } = useAppearance();
+const { appearance, updateAppearance } = useAppearance()
 
 const tabs = [
-    { value: 'light', Icon: Sun, label: 'Light' },
-    { value: 'dark', Icon: Moon, label: 'Dark' },
-    { value: 'system', Icon: Monitor, label: 'System' },
-] as const;
+    { value: "light", Icon: Sun, label: "Día" },
+    { value: "dark", Icon: Moon, label: "Noche" },
+    { value: "system", Icon: Monitor, label: "Sistema" },
+] as const
 </script>
 
 <template>
-    <div :class="['inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800', containerClass]">
+    <div
+        :class="[
+            'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800',
+            containerClass,
+        ]"
+    >
         <button
             v-for="{ value, Icon, label } in tabs"
             :key="value"
