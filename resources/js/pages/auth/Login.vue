@@ -11,10 +11,10 @@ defineProps<{
 
 <template>
     <AuthBase
-        title="Log in to your account"
-        description="Click the following button to log in"
+        title="Inicia sesión"
+        description="Da click en el siguiente botón para iniciar sesión"
     >
-        <Head title="Log in" />
+        <Head title="Inicio de sesión" />
 
         <div
             v-if="status"
@@ -30,7 +30,7 @@ defineProps<{
                 variant="secondary"
                 :href="route('google.login')"
             >
-                Log in with Google
+                Inicia sesión con Google
             </Button>
         </div>
     </AuthBase>
