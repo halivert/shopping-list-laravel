@@ -2,14 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Access extends Pivot
+class Access extends Model
 {
-    protected $fillable = [];
+    use HasUuids;
+
+    protected $table = 'access';
+
+    protected $fillable = [
+        'user_email'
+    ];
+
+    protected $with = [
+        'user',
+        'accessible',
+    ];
 
     /**
      * @return BelongsTo<User, Access>

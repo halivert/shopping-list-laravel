@@ -12,18 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('access', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+
             $table->foreignUuid('user_id')
+                ->nullable()
                 ->constrained()
                 ->cascadeOnDelete();
 
+            $table->string('user_email');
             $table->uuidMorphs('accessible');
-
-            $table->foreignUuid('added_by')
-                ->constrained('users', 'id')
-                ->cascadeOnDelete();
-
-            $table->index(['user_id', 'accessible_id', 'accessible_type']);
-
+            $table->timestamp('approved_at', 3)->nullable();
             $table->timestamps(3);
         });
     }
