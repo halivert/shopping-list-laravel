@@ -51,6 +51,10 @@ function handleItemChange(event: FocusEvent | KeyboardEvent) {
     const value = target.innerText.trim()
     target.innerText = value
 
+    if (value === props.products[index].name) {
+        return
+    }
+
     const productId = props.products[index].id
 
     if (!value) {
