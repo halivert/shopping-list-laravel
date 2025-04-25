@@ -1,17 +1,20 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Products\Requests;
 
+use App\Models\Product;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StoreProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
+    public function authorize(): Response
     {
-        return false;
+        return Gate::inspect('create', Product::class);
     }
 
     /**
@@ -22,7 +25,9 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required_without:products|string|max:100',
+            'products' => 'required_without:name|array',
+            'products.*' => 'string|max:100',
         ];
     }
 }

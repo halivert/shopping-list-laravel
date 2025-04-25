@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { Head, Link } from "@inertiajs/vue3"
+
 import AppLayout from "@/layouts/AppLayout.vue"
 import { type BreadcrumbItem } from "@/types"
-import { Head, Link } from "@inertiajs/vue3"
 import AppButton from "@/components/ui/button/Button.vue"
 import { Product } from "@/types/Product"
-import ProductList from "../components/products/ProductList.vue"
+import ProductList from "@/components/products/ProductList.vue"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,13 +23,27 @@ defineProps<{
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="px-2 py-1">
-            <h2 class="text-lg font-semibold">Lista de productos</h2>
-            <ProductList :products="products" />
+        <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
+            <section>
+                <h2 class="text-lg font-semibold">Lista de productos</h2>
+                <ProductList :products="products" />
+            </section>
 
-            <AppButton :as="Link" :href="route('products-share.create')"
-                >Compartir productos</AppButton
-            >
+            <div class="flex gap-3 justify-end">
+                <AppButton
+                    :as="Link"
+                    variant="default"
+                    :href="route('products-share.create')"
+                    >¡De compras!</AppButton
+                >
+
+                <AppButton
+                    :as="Link"
+                    variant="link"
+                    :href="route('products-share.create')"
+                    >Compartir productos</AppButton
+                >
+            </div>
         </div>
     </AppLayout>
 </template>
