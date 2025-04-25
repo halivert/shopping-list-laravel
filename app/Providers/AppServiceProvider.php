@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,11 +24,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
-            $event->extendSocialite('google', \SocialiteProviders\Google\Provider::class);
+        Event::listen(function (SocialiteWasCalled $event) {
+            $event->extendSocialite(
+                'google',
+                \SocialiteProviders\Google\Provider::class
+            );
         });
 
         JsonResource::withoutWrapping();
-        Model::preventLazyLoading(!App::isProduction());
+        Model::preventLazyLoading(App::isLocal());
     }
 }

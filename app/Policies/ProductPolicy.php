@@ -56,8 +56,6 @@ class ProductPolicy
      */
     public function delete(User $user, Product $product): Response
     {
-        return $user->is($product->owner)
-            ? $this->allow()
-            : $this->denyAsNotFound();
+        return $this->update($user, $product);
     }
 }
