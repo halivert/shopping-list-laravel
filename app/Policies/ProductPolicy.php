@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\Access;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -25,14 +24,9 @@ class ProductPolicy
      */
     public function view(User $user, Product $product): Response
     {
-        if ($user->is($product->owner)) return $this->allow();
-
-        $access = Access::query()
-            ->where('user_id', $user->id)
-            ->whereMorphedTo('accessible', $product->owner)
-            ->first();
-
-        return $access ? $this->allow() : $this->denyAsNotFound();
+        return $user->can('view', $product->owner)
+            ? $this->allow()
+            : $this->denyAsNotFound();
     }
 
     /**
