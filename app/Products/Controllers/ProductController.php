@@ -3,7 +3,9 @@
 namespace App\Products\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Access;
 use App\Models\Product;
+use App\Models\User;
 use App\Products\Requests\StoreProductRequest;
 use App\Products\Requests\UpdateProductRequest;
 use Illuminate\Http\JsonResponse;
@@ -37,15 +39,37 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProductRequest $request): JsonResponse|RedirectResponse
-    {
+    public function store(
+        StoreProductRequest $request
+    ): JsonResponse|RedirectResponse {
         $user = $request->user();
         $attrs = $request->validated();
 
+        if (Arr::has($attrs, 'user_id')) {
+            $access = Access::query()
+                ->where('user_id', $user->id)
+                ->whereMorphedTo(
+                    'accessible',
+                    User::query()->find($attrs['user_id'])
+                )->first();
+
+            if (!$access) {
+                abort(404);
+            }
+
+            $targetUser = $access->accessible;
+
+            if (!($targetUser instanceof User)) {
+                abort(404);
+            }
+        } else {
+            $targetUser = $user;
+        }
+
         if (Arr::has($attrs, 'name')) {
-            $user->products()->create($attrs);
+            $targetUser->products()->create($attrs);
         } else if (Arr::has($attrs, 'products')) {
-            $user->products()->createMany(
+            $targetUser->products()->createMany(
                 array_map(fn($item) => ['name' => $item], $attrs['products'])
             );
         }

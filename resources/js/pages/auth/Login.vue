@@ -1,12 +1,23 @@
 <script setup lang="ts">
-import { Head } from "@inertiajs/vue3"
+import { Head, useForm } from "@inertiajs/vue3"
+
 import { Button } from "@/components/ui/button"
 import AuthBase from "@/layouts/AuthLayout.vue"
+import AppInput from "@/components/ui/input/Input.vue"
 
 defineProps<{
+    local?: boolean
     status?: string
     canResetPassword: boolean
 }>()
+
+const loginForm = useForm({
+    email: "",
+})
+
+function handleSubmit() {
+    loginForm.post(route("local-login"))
+}
 </script>
 
 <template>
@@ -33,5 +44,9 @@ defineProps<{
                 Inicia sesión con Google
             </Button>
         </div>
+
+        <form v-if="local" @submit.prevent="handleSubmit">
+            <AppInput placeholder="Login local" v-model="loginForm.email" />
+        </form>
     </AuthBase>
 </template>

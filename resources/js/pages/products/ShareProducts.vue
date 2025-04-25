@@ -1,11 +1,24 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from "@inertiajs/vue3"
+
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppInputError from "@/components/InputError.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import { Access } from "@/types/Access"
+import { BreadcrumbItem } from "@/types"
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: "Dashboard",
+        href: "/",
+    },
+    {
+        title: "Compartir productos",
+        href: "/products-share/create",
+    },
+]
 
 defineProps<{
     sharedWith: Access[]
@@ -25,7 +38,7 @@ function handleSubmit() {
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Compartir productos" />
         <section class="px-4 py-2 max-w-prose space-y-3">
             <h1 class="text-2xl">Compartir productos</h1>
@@ -95,12 +108,14 @@ function handleSubmit() {
                 <ul>
                     <li v-for="access in sharedBy" :key="access.id">
                         <div class="inline-flex justify-between w-full">
-                            <span>
+                            <Link
+                                :href="route('products-share.show', access.id)"
+                            >
                                 {{ access.accessible?.name }} (<span
                                     class="text-gray-500"
                                     >{{ access.accessible?.email }}</span
                                 >)
-                            </span>
+                            </Link>
 
                             <Link
                                 :href="

@@ -5,9 +5,11 @@ import { useForm } from "@inertiajs/vue3"
 import { Product } from "@/types/Product"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
+import { User } from "@/types"
 
 const props = defineProps<{
     products: Product[]
+    user?: User
 }>()
 
 const edit = ref<number | undefined>(undefined)
@@ -29,6 +31,7 @@ function handleNewProduct() {
         .transform((data) => ({
             name: data.products.length === 1 ? data.name : undefined,
             products: data.products.length > 1 ? data.products : undefined,
+            user_id: props.user ? props.user.id : undefined,
         }))
         .post(route("products.store"), {
             onSuccess: () => productForm.reset(),

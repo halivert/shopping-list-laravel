@@ -26,6 +26,7 @@ class StoreProductRequest extends FormRequest
     {
         return [
             'name' => 'required_without:products|string|max:100',
+            'user_id' => 'sometimes|string|exists:users,id',
             'products' => 'required_without:name|array',
             'products.*' => 'string|max:100',
         ];

@@ -4,7 +4,10 @@ namespace App\Products\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AccessResource;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\UserResource;
 use App\Models\Access;
+use App\Models\User;
 use App\Products\Requests\StoreProductsShareRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +37,27 @@ class ProductsShareController extends Controller
             'sharedWith' => $sharedWith,
             'sharedBy' => $sharedBy,
             'requests' => $requests,
+        ]);
+    }
+
+    public function show(Request $request, Access $access): Response
+    {
+        $user = $request->user();
+        $accessible = $access->accessible;
+
+        if (!($accessible instanceof User)) {
+            abort(404);
+        }
+
+        if ($user->isNot($access->user)) {
+            abort(404);
+        }
+
+        $products = $accessible->products;
+
+        return Inertia::render('products/SharedProducts', [
+            'products' => fn() => ProductResource::collection($products),
+            'user' => UserResource::make($accessible),
         ]);
     }
 

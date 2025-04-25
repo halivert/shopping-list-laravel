@@ -9,6 +9,6 @@ Route::middleware('auth')->group(function () {
         ->only(['store', 'update', 'destroy']);
 
     Route::resource('products-share', ProductsShareController::class)
-        ->only(['create', 'store', 'update', 'destroy'])
+        ->only(['create', 'show', 'store', 'update', 'destroy'])
         ->parameters(['products-share' => 'access']);
 });
