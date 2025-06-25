@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Shopping\Policies\ShoppingDayItemPolicy;
 use App\Shopping\Policies\ShoppingDayPolicy;
 use App\Shopping\ShoppingDay;
+use App\Shopping\ShoppingDayItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
@@ -42,5 +44,6 @@ class AppServiceProvider extends ServiceProvider
          * Register policies
          */
         Gate::policy(ShoppingDay::class, ShoppingDayPolicy::class);
+        Gate::policy(ShoppingDayItem::class, ShoppingDayItemPolicy::class);
     }
 }
