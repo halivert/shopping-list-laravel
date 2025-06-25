@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from "@inertiajs/vue3"
+import { computed } from "vue"
+import { Head, Link, usePage } from "@inertiajs/vue3"
 
 import AppLayout from "@/layouts/AppLayout.vue"
 import { type BreadcrumbItem } from "@/types"
@@ -13,6 +14,10 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: "/",
     },
 ]
+
+const page = usePage()
+
+const user = computed(() => page.props.auth.user)
 
 defineProps<{
     products: Product[]
@@ -33,7 +38,11 @@ defineProps<{
                 <AppButton
                     :as="Link"
                     variant="default"
-                    :href="route('products-share.create')"
+                    :href="
+                        route('users.shopping-days.store', {
+                            owner: user.id,
+                        })
+                    "
                     >¡De compras!</AppButton
                 >
 

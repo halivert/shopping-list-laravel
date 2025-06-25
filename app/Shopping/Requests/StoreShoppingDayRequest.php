@@ -16,7 +16,7 @@ class StoreShoppingDayRequest extends FormRequest
     {
         return Gate::inspect('create', [
             ShoppingDay::class,
-            $this->route('user')
+            $this->route('owner')
         ]);
     }
 

@@ -42,7 +42,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
                     method="post"
                     :href="
                         route('users.shopping-days.store', {
-                            user: user.id,
+                            owner: user.id,
                         })
                     "
                     >¡De compras!</AppButton
