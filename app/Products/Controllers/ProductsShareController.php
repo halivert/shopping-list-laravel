@@ -101,7 +101,11 @@ class ProductsShareController extends Controller
     ): JsonResponse|RedirectResponse {
         $user = $request->user();
 
-        if (!$user->is($access->user) and !$user->is($access->accessible)) {
+        if (
+            !$user->is($access->user) and
+            !$user->is($access->accessible) and
+            $user->email !== $access->user_email
+        ) {
             abort(404);
         }
 
