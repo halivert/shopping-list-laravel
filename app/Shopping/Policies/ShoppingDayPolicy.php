@@ -42,7 +42,7 @@ class ShoppingDayPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ShoppingDay $shoppingDay)
+    public function delete(User $user, ShoppingDay $shoppingDay): Response
     {
         return $this->update($user, $shoppingDay);
     }
