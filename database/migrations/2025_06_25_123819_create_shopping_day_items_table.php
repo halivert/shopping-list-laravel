@@ -23,8 +23,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->integer('index');
-            $table->decimal('unit_price', 9, 4);
-            $table->decimal('quantity', 9, 4);
+            $table->decimal('unit_price', 9, 4)->nullable();
+            $table->decimal('quantity', 9, 4)->nullable();
 
             $table->timestamps(3);
         });
