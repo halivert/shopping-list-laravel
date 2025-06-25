@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Shopping\ShoppingDay;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -47,5 +48,13 @@ class User extends Authenticatable
     public function sharedBy(): HasMany
     {
         return $this->hasMany(Access::class, 'user_id');
+    }
+
+    /**
+     * @return HasMany<ShoppingDay, User>
+     */
+    public function shoppingDays(): HasMany
+    {
+        return $this->hasMany(ShoppingDay::class, 'owner_id');
     }
 }

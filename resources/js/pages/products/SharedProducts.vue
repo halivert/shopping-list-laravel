@@ -36,7 +36,15 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
             </section>
 
             <div class="flex gap-3 justify-end">
-                <AppButton :as="Link" variant="default" href="/"
+                <AppButton
+                    :as="Link"
+                    variant="default"
+                    method="post"
+                    :href="
+                        route('users.shopping-days.store', {
+                            user: user.id,
+                        })
+                    "
                     >¡De compras!</AppButton
                 >
             </div>
