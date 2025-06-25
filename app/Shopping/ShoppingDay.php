@@ -44,7 +44,8 @@ class ShoppingDay extends Model
      */
     public function items(): HasMany
     {
-        return $this->hasMany(ShoppingDayItem::class);
+        return $this->hasMany(ShoppingDayItem::class, 'shopping_day_id')
+            ->orderBy('index');
     }
 
     protected static function newFactory(): ShoppingDayFactory
