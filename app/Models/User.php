@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -31,7 +30,8 @@ class User extends Authenticatable
      */
     public function products(): HasMany
     {
-        return $this->hasMany(Product::class, 'owner_id');
+        return $this->hasMany(Product::class, 'owner_id')
+            ->orderBy('search_index');
     }
 
     /**
