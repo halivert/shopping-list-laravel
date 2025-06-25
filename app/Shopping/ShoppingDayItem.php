@@ -23,6 +23,10 @@ class ShoppingDayItem extends Model
         'quantity',
     ];
 
+    protected $with = [
+        'product',
+    ];
+
     protected function casts(): array
     {
         return [
