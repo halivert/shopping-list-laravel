@@ -16,11 +16,21 @@ class Product extends Model
     protected $fillable = [
         'owner_id',
         'name',
+        'search_index',
+        'shopping_index',
     ];
 
     protected $with = [
         'owner',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'search_index' => 'integer',
+            'shopping_index' => 'integer',
+        ];
+    }
 
     /**
      * @return BelongsTo<User, Product>

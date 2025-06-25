@@ -19,6 +19,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('name');
+            $table->integer('search_index')->nullable();
+            $table->integer('shopping_index')->nullable();
 
             $table->timestamps(3);
         });
