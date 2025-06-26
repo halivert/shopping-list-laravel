@@ -81,7 +81,6 @@ function handleCreateItem(
                 <section class="flex-1">
                     <h2 class="text-lg font-semibold">Para luego</h2>
                     <SortableItemList
-                        v-if="otherProducts.length"
                         group="products"
                         class="line-through"
                         :sortable="false"
