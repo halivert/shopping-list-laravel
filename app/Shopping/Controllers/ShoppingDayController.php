@@ -3,7 +3,6 @@
 namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\User;
 use App\Shopping\Requests\StoreShoppingDayRequest;
 use App\Shopping\Requests\UpdateShoppingDayRequest;
@@ -30,22 +29,9 @@ class ShoppingDayController extends Controller
         StoreShoppingDayRequest $request,
         User $owner
     ): JsonResponse|RedirectResponse {
-        $shoppingDay = DB::transaction(function () use ($owner) {
-            $shoppingDay = $owner->shoppingDays()->create([
-                'date' => now()
-            ]);
-
-            $shoppingDay->items()->createMany(
-                $owner->products->map(fn(Product $product, $idx) => [
-                    'product_id' => $product->id,
-                    'index' => $product->shopping_index ?? $idx,
-                    'quantity' => str($product->name)
-                        ->after('-')->toInteger() ?: 1,
-                ])
-            );
-
-            return $shoppingDay;
-        });
+        $shoppingDay = $owner->shoppingDays()->create([
+            'date' => now()
+        ]);
 
         return $request->wantsJson()
             ? response()->json(ShoppingDayResource::make($shoppingDay))

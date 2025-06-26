@@ -78,11 +78,11 @@ function handleCreateItem(
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
             <div class="flex flex-nowrap">
-                <section class="flex-1">
+                <section class="flex-1 top-0 sticky">
                     <h2 class="text-lg font-semibold">Para luego</h2>
                     <SortableItemList
                         group="products"
-                        class="line-through"
+                        class="line-through min-h-dvh"
                         :sortable="false"
                         :items="otherProducts"
                         @delete="handleCreateItem"
@@ -92,13 +92,13 @@ function handleCreateItem(
                 <section class="flex-1">
                     <h2 class="text-lg font-semibold">Por comprar</h2>
                     <SortableItemList
+                        class="min-h-dvh"
                         group="products"
-                        v-if="shoppingDay.items"
                         :items="
-                            shoppingDay.items.map((item) => ({
+                            shoppingDay.items?.map((item) => ({
                                 id: item.id,
                                 name: item.product.name,
-                            }))
+                            })) ?? []
                         "
                         @delete="handleDeleteItem"
                         @update="handleUpdateItems"

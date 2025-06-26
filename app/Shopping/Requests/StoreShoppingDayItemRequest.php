@@ -36,7 +36,7 @@ class StoreShoppingDayItemRequest extends FormRequest
                     ->where('owner_id', $this->shoppingDay->owner_id)
             ],
             'index' => 'integer|required',
-            'items' => 'array|required',
+            'items' => 'array|sometimes',
             'items.*' => [
                 'string',
                 'required',
