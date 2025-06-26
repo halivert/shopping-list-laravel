@@ -5,7 +5,6 @@ namespace App\Shopping\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Shopping\Requests\StoreShoppingDayItemRequest;
-use App\Shopping\Requests\UpdateShoppingDayItemRequest;
 use App\Shopping\Resources\ShoppingDayResource;
 use App\Shopping\ShoppingDay;
 use App\Shopping\ShoppingDayItem;

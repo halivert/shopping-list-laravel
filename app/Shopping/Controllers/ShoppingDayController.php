@@ -3,14 +3,17 @@
 namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\User;
 use App\Shopping\Requests\StoreShoppingDayRequest;
 use App\Shopping\Requests\UpdateShoppingDayRequest;
 use App\Shopping\Resources\ShoppingDayResource;
 use App\Shopping\ShoppingDay;
+use App\Shopping\ShoppingDayItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -81,17 +84,34 @@ class ShoppingDayController extends Controller
         $attrs = $request->validated();
 
         DB::transaction(function () use ($attrs, $shoppingDay) {
-            $originalItems = $shoppingDay->items;
+            $productNames = Product::query()
+                ->find(Arr::pluck($attrs['products'], 'id'))
+                ->pluck('name', 'id');
 
-            collect($attrs['items'])->each(
-                function ($itemId, $index) use ($originalItems) {
-                    $item = $originalItems->find($itemId);
-
-                    if ($item and $item->index !== $index) {
-                        $item->update(['index' => $index]);
-                    }
-                }
+            $itemsToDelete = $shoppingDay->items->except(
+                array_map(fn($item) => $item['id'], $attrs['items'])
             );
+
+            // Delete items
+            $itemsToDelete->map(fn(ShoppingDayItem $item) => $item->delete());
+
+            // Create new products
+            $shoppingDay->items()->createMany(
+                collect($attrs['products'])->map(fn($product) => [
+                    'product_id' => $product['id'],
+                    'index' => $product['index'],
+                    'name' => $productNames[$product['id']],
+                    'quantity' => str($productNames[$product['id']])
+                        ->after('-')->toInteger() ?: 1,
+                ])
+            );
+
+            // Update current items index
+            collect($attrs['items'])->each(function ($item) use ($shoppingDay) {
+                $shoppingDay->items->find($item['id'])->update([
+                    'index' => $item['index']
+                ]);
+            });
         });
 
         return $request->wantsJson()

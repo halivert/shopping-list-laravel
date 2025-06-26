@@ -2,6 +2,8 @@
 
 namespace App\Shopping\Requests;
 
+use App\Models\Product;
+use Closure;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -25,13 +27,23 @@ class UpdateShoppingDayRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'items' => 'array|required|min:2',
-            'items.*' => [
+            'items' => 'array|required',
+            'items.*.id' => [
                 'required',
                 'string',
                 Rule::exists('shopping_day_items', 'id')
                     ->where('shopping_day_id', $this->shoppingDay->id),
-            ]
+            ],
+            'items.*.index' => 'required|integer',
+
+            'products' => 'array',
+            'products.*.id' => [
+                'required',
+                'string',
+                Rule::exists('products', 'id')
+                    ->where('owner_id', $this->shoppingDay->owner_id),
+            ],
+            'products.*.index' => 'required|integer'
         ];
     }
 }
