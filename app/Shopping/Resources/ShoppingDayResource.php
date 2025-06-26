@@ -16,8 +16,12 @@ class ShoppingDayResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'date' => $this->date->format('Y-m-d'),
-            'owner' => UserResource::make($this->whenLoaded('owner')),
+            'owner' => UserResource::make($this->owner),
+            'items' => ShoppingDayItemResource::collection(
+                $this->whenLoaded('items')
+            ),
         ];
     }
 }

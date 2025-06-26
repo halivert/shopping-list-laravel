@@ -38,6 +38,7 @@ defineProps<{
                 <AppButton
                     :as="Link"
                     variant="default"
+                    method="POST"
                     :href="
                         route('users.shopping-days.store', {
                             owner: user.id,
