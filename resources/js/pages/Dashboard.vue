@@ -2,10 +2,10 @@
 import { computed } from "vue"
 import { Head, Link, usePage } from "@inertiajs/vue3"
 
+import type { BreadcrumbItem } from "@/types"
+import type { Product } from "@/types/Product"
 import AppLayout from "@/layouts/AppLayout.vue"
-import { type BreadcrumbItem } from "@/types"
 import AppButton from "@/components/ui/button/Button.vue"
-import { Product } from "@/types/Product"
 import ProductList from "@/components/products/ProductList.vue"
 
 const breadcrumbs: BreadcrumbItem[] = [

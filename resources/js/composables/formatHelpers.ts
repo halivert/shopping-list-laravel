@@ -10,11 +10,14 @@ export function getCurrency(number: number): string {
     }).format(number)
 }
 
-export function formatDate(strDate: string): string {
+export function formatDate(
+    strDate: string,
+    style: "medium" | "full" | "long" | "short" = "medium"
+): string {
     const page = usePage()
     const date = new Date(strDate)
 
     return new Intl.DateTimeFormat(page.props.lang, {
-        dateStyle: "medium",
+        dateStyle: style,
     }).format(date)
 }

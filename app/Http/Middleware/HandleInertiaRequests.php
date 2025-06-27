@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Shopping\Resources\ShoppingDayResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Inertia\Middleware;
@@ -36,6 +37,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $lastFiveShoppingDays = $request->user()?->shoppingDays()
+            ->limit(5)->get();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -43,6 +47,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            ...($lastFiveShoppingDays ? [
+                'sidebarShoppingDays' => ShoppingDayResource::collection(
+                    $lastFiveShoppingDays
+                )
+            ] : []),
         ];
     }
 }

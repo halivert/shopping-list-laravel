@@ -14,7 +14,7 @@ class DashboardController extends Controller
         $products = $request->user()->products;
 
         return Inertia::render('Dashboard', [
-            'products' => fn() => ProductResource::collection($products)
+            'products' => fn() => ProductResource::collection($products),
         ]);
     }
 }

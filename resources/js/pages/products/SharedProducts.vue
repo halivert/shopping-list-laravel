@@ -28,7 +28,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 <template>
     <Head :title="`Productos de ${props.user.name}`" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+        <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
             <section>
                 <h2 class="text-lg font-semibold">Lista de productos</h2>

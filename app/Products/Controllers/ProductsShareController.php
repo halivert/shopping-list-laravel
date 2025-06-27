@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Access;
 use App\Models\User;
 use App\Products\Requests\StoreProductsShareRequest;
+use App\Shopping\Resources\ShoppingDayResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,9 +56,16 @@ class ProductsShareController extends Controller
 
         $products = $accessible->products;
 
+        $lastAccessibleFiveShoppingDays = $accessible?->shoppingDays()
+            ->limit(5)->get();
+
         return Inertia::render('products/SharedProducts', [
             'products' => fn() => ProductResource::collection($products),
             'user' => UserResource::make($accessible),
+            'sidebarShoppingDays' => $lastAccessibleFiveShoppingDays
+                ? ShoppingDayResource::collection(
+                    $lastAccessibleFiveShoppingDays
+                ) : []
         ]);
     }
 
@@ -102,9 +110,14 @@ class ProductsShareController extends Controller
         $user = $request->user();
 
         if (
-            !$user->is($access->user) and
-            !$user->is($access->accessible) and
-            $user->email !== $access->user_email
+            !(
+                $user->is($access->user)
+                or (
+                    $user->email === $access->user_email
+                    and $access->user_id === null
+                )
+            )
+            and !$user->is($access->accessible)
         ) {
             abort(404);
         }

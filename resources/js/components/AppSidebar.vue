@@ -13,8 +13,16 @@ import {
 } from "@/components/ui/sidebar"
 import { type NavItem } from "@/types"
 import { Link } from "@inertiajs/vue3"
-import { BookOpen, Folder, LayoutGrid } from "lucide-vue-next"
+import { LayoutGrid } from "lucide-vue-next"
 import AppLogo from "./AppLogo.vue"
+
+interface Props {
+    mainItems?: NavItem[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    mainItems: () => [],
+})
 
 const mainNavItems: NavItem[] = [
     {
@@ -22,6 +30,7 @@ const mainNavItems: NavItem[] = [
         href: "/",
         icon: LayoutGrid,
     },
+    ...props.mainItems,
 ]
 
 const footerNavItems: NavItem[] = []

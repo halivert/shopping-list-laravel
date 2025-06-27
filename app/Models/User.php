@@ -55,6 +55,7 @@ class User extends Authenticatable
      */
     public function shoppingDays(): HasMany
     {
-        return $this->hasMany(ShoppingDay::class, 'owner_id');
+        return $this->hasMany(ShoppingDay::class, 'owner_id')
+            ->latest('date');
     }
 }
