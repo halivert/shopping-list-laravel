@@ -23,7 +23,7 @@ const [parent, items] = useDragAndDrop(model.value ?? [], {
     sortable: props.sortable,
     group: props.group,
     draggingClass: "font-bold text-xl",
-    dragPlaceholderClass: "bg-gray-200",
+    dragPlaceholderClass: "bg-secondary",
 })
 
 watch(items, (newItems) => (model.value = newItems))
@@ -33,7 +33,7 @@ watch(model, (newItems) => newItems && (items.value = newItems))
 <template>
     <ul ref="parent" class="space-y-1">
         <li
-            class="px-2 py-1 rounded-sm hover:bg-gray-50"
+            class="px-2 py-1 rounded-sm hover:bg-secondary"
             v-for="item in items"
             :key="item.id"
         >

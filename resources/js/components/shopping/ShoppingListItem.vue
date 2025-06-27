@@ -82,7 +82,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
                 class="flex items-center justify-between w-1/2 sm:w-1/3"
             >
                 <button
-                    class="h-6 w-6 rounded bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
+                    class="h-6 w-6 rounded bg-secondary disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
                     @click="updateQuantity(Math.ceil(quantity - 1))"
                     @contextmenu.prevent="context(() => updateQuantity(1))"
                     :disabled="quantity === 1"
@@ -109,7 +109,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
                     {{ quantity }}
                 </span>
                 <button
-                    class="h-6 w-6 rounded bg-green-200 text-black p-0.5"
+                    class="h-6 w-6 rounded bg-primary text-background p-0.5"
                     @click="updateQuantity(Math.floor(quantity + 1))"
                     @contextmenu.prevent
                 >
@@ -131,7 +131,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
             </div>
             <form v-else @submit.prevent="handleSubmit" class="w-1/2 sm:w-1/3">
                 <AppInput
-                    class="bg-gray-50 px-1 py-0.5 text-lg rounded text-black w-full invalid:text-red-600 invalid:saturate-200"
+                    class="bg-secondary text-primary px-1 py-0.5 text-lg rounded w-full invalid:text-red-600 invalid:saturate-200"
                     name="quantity"
                     type="number"
                     step="0.001"
@@ -144,7 +144,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
             </form>
             <div class="relative">
                 <AppInput
-                    class="bg-gray-100 invalid:text-red-600 invalid:saturate-200"
+                    class="bg-secondary invalid:text-red-600 invalid:saturate-200"
                     type="number"
                     :placeholder="lastPriceFormatted"
                     :modelValue="unitPrice || ''"
@@ -153,7 +153,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
 
                 <span
                     v-if="total && quantity !== 1"
-                    class="absolute top-1/2 -translate-y-1/2 right-10 bg-gray-50 px-1 rounded"
+                    class="absolute top-1/2 -translate-y-1/2 right-10 bg-secondary px-1 rounded"
                     >{{ getCurrency(total) }}</span
                 >
             </div>

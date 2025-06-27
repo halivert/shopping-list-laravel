@@ -59,7 +59,7 @@ function handleSave(items: ShoppingDayItem[]) {
                 </small>
             </div>
             <header
-                class="text-xl sticky top-0 pt-2 pb-1 bg-white flex justify-between z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
+                class="text-xl sticky top-0 pt-2 pb-1 bg-background flex justify-between z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
             >
                 <span>
                     Total: <span class="">{{ getCurrency(total) }}</span>

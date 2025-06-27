@@ -120,7 +120,7 @@ function handleSaveShoppingDay() {
     <Head :title="`Día de compras: ${formatDate(props.shoppingDay.date)}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <header class="flex p-3 top-0 sticky bg-white z-10 justify-end">
+        <header class="flex p-3 top-0 sticky bg-background z-10 justify-end">
             <AppButton @click="handleSaveShoppingDay">Siguiente</AppButton>
         </header>
 

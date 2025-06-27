@@ -99,6 +99,6 @@ html {
     }
 
     .shopping-list-item.checked input {
-        @apply bg-white;
+        @apply bg-background;
     }
 }
