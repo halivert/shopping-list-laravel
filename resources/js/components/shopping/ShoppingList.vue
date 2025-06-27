@@ -1,58 +1,43 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue"
-import { Link } from "@inertiajs/vue3"
+import { computed, watch } from "vue"
 
+import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
 import ShoppingListItem from "./ShoppingListItem.vue"
-import AppButton from "@/components/ui/button/Button.vue"
-import { ShoppingDayItem } from "@/types/ShoppingDayItem"
-import { ShoppingDay } from "@/types/ShoppingDay"
+
+const model = defineModel<(ShoppingDayItem & { checked: boolean })[]>()
 
 const props = withDefaults(
     defineProps<{
-        shoppingDay: ShoppingDay
         hideChecked?: boolean
     }>(),
     { hideChecked: false }
 )
 
 const emit = defineEmits<{
-    updateTotal: [total: number]
-    update: [items: ShoppingDayItem[]]
-    save: [items: ShoppingDayItem[]]
+    updateTotal: [total: number, first: boolean]
 }>()
-
-const originalItems = ref(
-    props.shoppingDay.items?.map((item) => ({
-        ...item,
-        quantity: item.quantity ?? 1,
-        unitPrice: item.unitPrice ?? 0,
-        checked: false,
-    })) ?? []
-)
 
 const computedItems = computed(
     () =>
         (props.hideChecked
-            ? originalItems.value?.filter((item) => !item.checked)
-            : originalItems.value) ?? []
+            ? model.value?.filter((item) => !item.checked)
+            : model.value) ?? []
 )
 
-const total = computed(() =>
-    originalItems.value.reduce((total, item) => {
-        if (Number.isNaN(item.unitPrice) || Number.isNaN(item.quantity)) {
-            return total
-        }
+const total = computed(
+    () =>
+        model.value?.reduce((total, item) => {
+            if (Number.isNaN(item.unitPrice) || Number.isNaN(item.quantity)) {
+                return total
+            }
 
-        return total + item.unitPrice * item.quantity
-    }, 0)
+            return total + item.unitPrice * item.quantity
+        }, 0) ?? 0
 )
 
 watch(
     total,
-    (total) => {
-        emit("updateTotal", total)
-        emit("update", originalItems.value)
-    },
+    (total, lastTotal) => emit("updateTotal", total, lastTotal == undefined),
     { immediate: true }
 )
 </script>
@@ -73,19 +58,5 @@ watch(
                 </ShoppingListItem>
             </li>
         </ul>
-
-        <div class="flex gap-2 bottom-2 left-0 right-0 sticky mt-2">
-            <AppButton
-                :as="Link"
-                :href="route('shopping-days.edit', { shoppingDay })"
-                class="flex-1"
-                variant="secondary"
-            >
-                Editar
-            </AppButton>
-            <AppButton class="flex-[2]" @click="emit('save', originalItems)"
-                >Guardar</AppButton
-            >
-        </div>
     </div>
 </template>
