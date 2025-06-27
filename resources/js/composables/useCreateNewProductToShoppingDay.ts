@@ -1,8 +1,11 @@
 import { MaybeRef, unref } from "vue"
 import { useForm } from "@inertiajs/vue3"
 
+type FormOptions = Parameters<ReturnType<typeof useForm>["post"]>[1]
+
 export function useCreateNewProductToShoppingDay(
-    shoppingDayId: MaybeRef<string>
+    shoppingDayId: MaybeRef<string>,
+    { onSuccess }: FormOptions = {}
 ) {
     const form = useForm({ name: "" })
 
@@ -13,7 +16,11 @@ export function useCreateNewProductToShoppingDay(
             }),
             {
                 preserveScroll: true,
-                onSuccess: () => (form.name = ""),
+                onSuccess: (response) => {
+                    form.name = ""
+
+                    onSuccess?.(response)
+                },
             }
         )
     }

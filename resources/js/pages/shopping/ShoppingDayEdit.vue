@@ -53,9 +53,6 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     },
 ])
 
-const { form: productForm, handleSubmit: handleNewProduct } =
-    useCreateNewProductToShoppingDay(computed(() => shoppingDay.value.id))
-
 const itemsWithIndex = computed(() =>
     items.value.map(({ id, type }, index) => ({
         id,
@@ -74,6 +71,20 @@ const autoSaveItems = useDebounceFn(function autoSaveItems() {
 }, 5 * 1000)
 
 const { ignoreUpdates } = watchIgnorable(groupedItemsWithIndex, autoSaveItems)
+
+const { form: productForm, handleSubmit: handleNewProduct } =
+    useCreateNewProductToShoppingDay(
+        computed(() => shoppingDay.value.id),
+        {
+            onSuccess: (response) => {
+                const responseProps = (response as Page<Props>).props
+                ignoreUpdates(() => {
+                    products.value = mapProducts(responseProps.otherProducts)
+                    items.value = mapItems(responseProps.shoppingDay.items)
+                })
+            },
+        }
+    )
 
 function handleSaveShoppingDay({ async }: { async: boolean }) {
     router.patch(
