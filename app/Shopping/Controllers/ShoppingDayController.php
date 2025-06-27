@@ -189,8 +189,14 @@ class ShoppingDayController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ShoppingDay $shoppingDay): void
-    {
-        //
+    public function destroy(
+        Request $request,
+        ShoppingDay $shoppingDay
+    ): JsonResponse|RedirectResponse {
+        $shoppingDay->delete();
+
+        return $request->wantsJson()
+            ? response()->json(204, null)
+            : to_route('home');
     }
 }

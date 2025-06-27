@@ -19,6 +19,7 @@ import {
 } from "@/composables/mapHelpers"
 import { useEditShoppingDay } from "@/composables/useEditShoppingDay"
 import EditShoppingDayDateInput from "@/components/shopping/EditShoppingDayDateInput.vue"
+import DeleteShoppingDay from "@/components/shopping/DeleteShoppingDay.vue"
 
 interface Props extends PageProps {
     shoppingDay: ShoppingDay
@@ -183,7 +184,9 @@ const {
                 </section>
             </div>
 
-            <div class="flex gap-3 justify-end"></div>
+            <div class="flex justify-end">
+                <DeleteShoppingDay :shoppingDay="shoppingDay" />
+            </div>
         </div>
     </AppLayout>
 </template>
