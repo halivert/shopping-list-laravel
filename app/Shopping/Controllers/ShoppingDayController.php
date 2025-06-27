@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\User;
+use App\Shopping\Middleware\SidebarShoppingDaysMiddleware;
 use App\Shopping\Requests\StoreShoppingDayRequest;
 use App\Shopping\Requests\UpdateShoppingDayRequest;
 use App\Shopping\Resources\ShoppingDayResource;
@@ -24,6 +25,8 @@ class ShoppingDayController extends Controller
     public function __construct()
     {
         $this->authorizeResource([ShoppingDay::class, 'owner'], 'shoppingDay');
+
+        $this->middleware(SidebarShoppingDaysMiddleware::class);
     }
 
     /**
