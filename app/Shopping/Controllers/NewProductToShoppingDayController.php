@@ -29,7 +29,7 @@ class NewProductToShoppingDayController extends Controller
                 $lastItem = ShoppingDayItem::query()
                     ->where('shopping_day_id', $shoppingDay->id)
                     ->orderByDesc('index')
-                    ?->first();
+                    ->first();
 
                 $product = Product::query()->firstOrCreate(
                     ['name' => $attrs['name']],
@@ -38,7 +38,7 @@ class NewProductToShoppingDayController extends Controller
 
                 return $shoppingDay->items()->create([
                     'product_id' => $product->id,
-                    'index' => $lastItem->index ? $lastItem->index + 1 : 0,
+                    'index' => $lastItem?->index ? $lastItem->index + 1 : 0,
                     'quantity' => str($product->name)->after('-')
                         ->toInteger() ?: 1,
                 ]);
