@@ -1,8 +1,8 @@
-import { computed, ComputedRef, MaybeRef, unref } from "vue"
+import { computed, MaybeRef, unref } from "vue"
 import { usePage } from "@inertiajs/vue3"
+import { CalendarDays, Dot } from "lucide-vue-next"
 
 import type { ShoppingDay } from "@/types/ShoppingDay"
-import { CalendarDays, Dot } from "lucide-vue-next"
 import { NavLinkItem } from "@/types"
 import { formatDate } from "./formatHelpers"
 
@@ -58,7 +58,10 @@ export function useSidebarShoppingDaysMenuItems(
                                   icon: Dot,
                               })
                           ) ?? [],
-                      footer: sidebarFooter.value,
+                      /**
+                       * TODO: enable when shopping days index is correct
+                       */
+                      // footer: sidebarFooter.value,
                   },
               ]
             : undefined
