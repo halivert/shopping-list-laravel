@@ -37,8 +37,10 @@ class ShoppingDayController extends Controller
         StoreShoppingDayRequest $request,
         User $owner
     ): JsonResponse|RedirectResponse {
+        $attrs = $request->validated();
+
         $shoppingDay = $owner->shoppingDays()->create([
-            'date' => now()
+            'date' => Carbon::parse($attrs['date']),
         ]);
 
         return $request->wantsJson()

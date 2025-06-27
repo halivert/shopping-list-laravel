@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue"
-import { Head, Link, usePage } from "@inertiajs/vue3"
+import { Head, Link, router, usePage } from "@inertiajs/vue3"
 
 import type { BreadcrumbItem } from "@/types"
 import type { Product } from "@/types/Product"
@@ -22,6 +22,16 @@ const user = computed(() => page.props.auth.user)
 defineProps<{
     products: Product[]
 }>()
+
+function handleCreateShoppingDay() {
+    const today = new Date(new Date().toJSON().split("T")[0] + "T00:00")
+
+    if (!user.value) return
+
+    router.post(route("users.shopping-days.store", { owner: user.value.id }), {
+        date: today,
+    })
+}
 </script>
 
 <template>
@@ -36,14 +46,9 @@ defineProps<{
 
             <div class="flex gap-3 justify-end">
                 <AppButton
-                    :as="Link"
+                    v-if="user"
                     variant="default"
-                    method="POST"
-                    :href="
-                        route('users.shopping-days.store', {
-                            owner: user.id,
-                        })
-                    "
+                    @click="handleCreateShoppingDay"
                     >¡De compras!</AppButton
                 >
 

@@ -28,7 +28,7 @@ class StoreShoppingDayRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'date' => 'required|date|before_or_equal:now',
         ];
     }
 }

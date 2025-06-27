@@ -4,6 +4,7 @@ namespace App\Shopping\Middleware;
 
 use App\Models\ShoppingDay;
 use App\Models\User;
+use App\Shopping\Resources\ShoppingDayResource;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -26,8 +27,10 @@ class SidebarShoppingDaysMiddleware extends Middleware
             return parent::share($request);
         }
 
-        $lastFiveShoppingDays = fn() => $owner->shoppingDays()
-            ->limit(5)->get();
+        $lastFiveShoppingDays = fn() => ShoppingDayResource::collection(
+            $owner->shoppingDays()
+                ->limit(5)->get()
+        );
 
         return [
             ...parent::share($request),
