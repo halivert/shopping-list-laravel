@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
-import { useDebounceFn } from "@vueuse/core"
+import { useDebounceFn, watchIgnorable } from "@vueuse/core"
 import { Head, router } from "@inertiajs/vue3"
+import type { Page, PageProps } from "@inertiajs/core"
 
 import AppLayout from "@/layouts/AppLayout.vue"
 import type { BreadcrumbItem } from "@/types"
@@ -19,10 +20,12 @@ import {
 import { useEditShoppingDay } from "@/composables/useEditShoppingDay"
 import EditShoppingDayDateInput from "@/components/shopping/EditShoppingDayDateInput.vue"
 
-const props = defineProps<{
+interface Props extends PageProps {
     shoppingDay: ShoppingDay
     otherProducts: Product[]
-}>()
+}
+
+const props = defineProps<Props>()
 
 function mapItems(items: ShoppingDay["items"]) {
     return items?.map(shoppingDayItemToSortableListItem) ?? []
@@ -53,39 +56,48 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 const { form: productForm, handleSubmit: handleNewProduct } =
     useCreateNewProductToShoppingDay(computed(() => shoppingDay.value.id))
 
-const groupedItemsWithIndex = computed(() =>
-    Object.groupBy(
-        items.value.map(({ id, type }, index) => ({
-            id,
-            index,
-            type,
-        })),
-        ({ type }) => (type === "item" ? "items" : "products")
-    )
+const itemsWithIndex = computed(() =>
+    items.value.map(({ id, type }, index) => ({
+        id,
+        index,
+        type,
+    }))
 )
 
+const groupedItemsWithIndex = computed(() => ({
+    items: itemsWithIndex.value.filter(({ type }) => type === "item"),
+    products: itemsWithIndex.value.filter(({ type }) => type === "product"),
+}))
+
 const autoSaveItems = useDebounceFn(function autoSaveItems() {
-    handleSaveShoppingDay({ redirect: false })
+    handleSaveShoppingDay({ async: true })
 }, 5 * 1000)
 
-watch(groupedItemsWithIndex, autoSaveItems)
+const { ignoreUpdates } = watchIgnorable(groupedItemsWithIndex, autoSaveItems)
 
-function handleSaveShoppingDay({ redirect }: { redirect: boolean }) {
+function handleSaveShoppingDay({ async }: { async: boolean }) {
     router.patch(
         route("shopping-days.update", {
             shoppingDay: props.shoppingDay.id,
         }),
         groupedItemsWithIndex.value,
         {
+            async,
             preserveScroll: true,
-            onSuccess: () => {
-                if (redirect) {
-                    router.get(
+            onSuccess: (response) => {
+                if (!async) {
+                    return router.get(
                         route("shopping-days.show", {
                             shoppingDay: props.shoppingDay.id,
                         })
                     )
                 }
+
+                const responseProps = (response as Page<Props>).props
+                ignoreUpdates(() => {
+                    products.value = mapProducts(responseProps.otherProducts)
+                    items.value = mapItems(responseProps.shoppingDay.items)
+                })
             },
         }
     )
@@ -115,7 +127,7 @@ const {
                 </EditShoppingDayDateInput>
             </form>
 
-            <AppButton @click="() => handleSaveShoppingDay({ redirect: true })">
+            <AppButton @click="() => handleSaveShoppingDay({ async: false })">
                 Llenar
             </AppButton>
         </header>
