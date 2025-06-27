@@ -88,13 +88,14 @@ class ShoppingDayController extends Controller
 
         DB::transaction(function () use ($attrs, $shoppingDay) {
             $requestProducts = Arr::get($attrs, 'products', []);
+            $requestItems = Arr::get($attrs, 'items', []);
 
             $productNames = Product::query()
                 ->find(Arr::pluck($requestProducts, 'id'))
                 ->pluck('name', 'id');
 
             $itemsToDelete = $shoppingDay->items->except(
-                array_map(fn($item) => $item['id'], $attrs['items'])
+                array_map(fn($item) => $item['id'], $requestItems)
             );
 
             // Delete items
@@ -112,7 +113,7 @@ class ShoppingDayController extends Controller
             );
 
             // Update current items data
-            collect($attrs['items'])->each(
+            collect($requestItems)->each(
                 function ($attrs) use ($shoppingDay) {
                     $item = $shoppingDay->items->find($attrs['id']);
 
@@ -121,7 +122,7 @@ class ShoppingDayController extends Controller
                     $item->unit_price = Arr::get(
                         $attrs,
                         'unitPrice',
-                        $item->unitPrice
+                        $item->unit_price
                     );
 
                     $item->quantity = Arr::get(

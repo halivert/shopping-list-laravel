@@ -2,8 +2,6 @@
 
 namespace App\Shopping\Requests;
 
-use App\Models\Product;
-use Closure;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -28,7 +26,7 @@ class UpdateShoppingDayRequest extends FormRequest
     {
         return [
             'touch' => 'sometimes|boolean',
-            'items' => 'array|required',
+            'items' => 'array',
             'items.*.id' => [
                 'required',
                 'string',
