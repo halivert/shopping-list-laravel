@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
+import { Link } from "@inertiajs/vue3"
 
 import ShoppingListItem from "./ShoppingListItem.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import { ShoppingDayItem } from "@/types/ShoppingDayItem"
-import { ShoppingDay } from "@/types/ShoppingDay";
-import { Link } from "@inertiajs/vue3";
+import { ShoppingDay } from "@/types/ShoppingDay"
 
 const props = withDefaults(
     defineProps<{
