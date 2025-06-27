@@ -27,6 +27,7 @@ class UpdateShoppingDayRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'touch' => 'sometimes|boolean',
             'items' => 'array|required',
             'items.*.id' => [
                 'required',
@@ -34,7 +35,9 @@ class UpdateShoppingDayRequest extends FormRequest
                 Rule::exists('shopping_day_items', 'id')
                     ->where('shopping_day_id', $this->shoppingDay->id),
             ],
-            'items.*.index' => 'required|integer',
+            'items.*.index' => 'sometimes|integer',
+            'items.*.quantity' => 'sometimes|numeric',
+            'items.*.unitPrice' => 'sometimes|numeric',
 
             'products' => 'array',
             'products.*.id' => [

@@ -3,6 +3,7 @@
 namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\User;
 use App\Shopping\Requests\StoreShoppingDayRequest;
@@ -50,10 +51,12 @@ class ShoppingDayController extends Controller
     ): JsonResponse|Response {
         $shoppingDay->load(['items']);
 
+        $shoppingDayResource = ShoppingDayResource::make($shoppingDay);
+
         return $request->wantsJson()
-            ? response()->json(ShoppingDayResource::make($shoppingDay))
+            ? response()->json($shoppingDayResource)
             : Inertia::render('shopping/ShoppingDayShow', [
-                'shoppingDay' => $shoppingDay
+                'shoppingDay' => $shoppingDayResource
             ]);
     }
 
@@ -69,8 +72,8 @@ class ShoppingDayController extends Controller
         );
 
         return Inertia::render('shopping/ShoppingDayEdit', [
-            'shoppingDay' => $shoppingDay,
-            'otherProducts' => $products,
+            'shoppingDay' => ShoppingDayResource::make($shoppingDay),
+            'otherProducts' => ProductResource::collection($products),
         ]);
     }
 
@@ -84,8 +87,10 @@ class ShoppingDayController extends Controller
         $attrs = $request->validated();
 
         DB::transaction(function () use ($attrs, $shoppingDay) {
+            $requestProducts = Arr::get($attrs, 'products', []);
+
             $productNames = Product::query()
-                ->find(Arr::pluck($attrs['products'], 'id'))
+                ->find(Arr::pluck($requestProducts, 'id'))
                 ->pluck('name', 'id');
 
             $itemsToDelete = $shoppingDay->items->except(
@@ -97,7 +102,7 @@ class ShoppingDayController extends Controller
 
             // Create new products
             $shoppingDay->items()->createMany(
-                collect($attrs['products'])->map(fn($product) => [
+                collect($requestProducts)->map(fn($product) => [
                     'product_id' => $product['id'],
                     'index' => $product['index'],
                     'name' => $productNames[$product['id']],
@@ -106,12 +111,34 @@ class ShoppingDayController extends Controller
                 ])
             );
 
-            // Update current items index
-            collect($attrs['items'])->each(function ($item) use ($shoppingDay) {
-                $shoppingDay->items->find($item['id'])->update([
-                    'index' => $item['index']
-                ]);
-            });
+            // Update current items data
+            collect($attrs['items'])->each(
+                function ($attrs) use ($shoppingDay) {
+                    $item = $shoppingDay->items->find($attrs['id']);
+
+                    $item->index = Arr::get($attrs, 'index', $item->index);
+
+                    $item->unit_price = Arr::get(
+                        $attrs,
+                        'unitPrice',
+                        $item->unitPrice
+                    );
+
+                    $item->quantity = Arr::get(
+                        $attrs,
+                        'quantity',
+                        $item->quantity
+                    );
+
+                    if ($item->isDirty()) {
+                        $item->save();
+                    }
+                }
+            );
+
+            if ($attrs['touch'] ?? false) {
+                $shoppingDay->touch();
+            }
         });
 
         return $request->wantsJson()

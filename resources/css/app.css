@@ -92,3 +92,13 @@ html {
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    .shopping-list-item.checked span.slot {
+        @apply line-through;
+    }
+
+    .shopping-list-item.checked input {
+        @apply bg-white;
+    }
+}

@@ -102,7 +102,16 @@ function handleSaveShoppingDay() {
             items: currentItems,
             products: newProducts,
         },
-        { preserveScroll: true }
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.get(
+                    route("shopping-days.show", {
+                        shoppingDay: props.shoppingDay.id,
+                    })
+                )
+            },
+        }
     )
 }
 </script>

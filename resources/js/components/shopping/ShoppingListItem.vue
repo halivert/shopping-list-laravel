@@ -1,0 +1,162 @@
+<script setup lang="ts">
+import { computed, ref, watch } from "vue"
+
+import AppInput from "../ui/input/Input.vue"
+import { getCurrency } from "@/composables/formatHelpers"
+
+const unitPrice = defineModel<number>("unitPrice", { default: 0 })
+const quantity = defineModel<number>("quantity", { default: 0 })
+const checked = defineModel<boolean>("checked")
+
+const props = defineProps<{
+    lastPrice?: number
+}>()
+
+watch(
+    unitPrice,
+    (unitPrice) => (checked.value = !Number.isNaN(unitPrice) && unitPrice > 0),
+    { immediate: true }
+)
+
+const updateQuantity = (newQuantity: number) => {
+    if (newQuantity <= 0) return
+    quantity.value = newQuantity
+}
+
+const total = computed(() => {
+    const total = quantity.value * unitPrice.value
+
+    return Number.isNaN(total) ? 0 : total
+})
+
+const lastPriceFormatted = computed(() =>
+    props.lastPrice ? getCurrency(props.lastPrice) : ""
+)
+
+const editCount = ref(false)
+
+const context = (fn?: () => void) => {
+    if ("vibrate" in navigator) {
+        navigator.vibrate([100, 100, 150])
+    }
+
+    fn?.()
+}
+
+function handleSubmit(e: Event) {
+    const form = e.target as HTMLFormElement
+    const quantityInput = form.elements.namedItem("quantity")
+
+    if (!(quantityInput instanceof HTMLInputElement)) {
+        return
+    }
+
+    handleUpdateQuantity(quantityInput)
+}
+
+function handleUpdateQuantity(quantityInput: HTMLInputElement) {
+    const quantity = quantityInput.valueAsNumber
+
+    if (Number.isNaN(quantity)) {
+        return
+    }
+
+    updateQuantity(quantity)
+    editCount.value = false
+}
+</script>
+
+<template>
+    <div
+        :class="[
+            { checked },
+            'shopping-list-item flex gap-5 flex-nowrap items-start',
+        ]"
+    >
+        <span class="basis-2/6 shrink-0 slot">
+            <slot />
+        </span>
+        <div class="flex-1 flex gap-3 px-0.5 flex-wrap-reverse justify-end">
+            <div
+                v-if="!editCount"
+                class="flex items-center justify-between w-1/2 sm:w-1/3"
+            >
+                <button
+                    class="h-6 w-6 rounded bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
+                    @click="updateQuantity(Math.ceil(quantity - 1))"
+                    @contextmenu.prevent="context(() => updateQuantity(1))"
+                    :disabled="quantity === 1"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="mx-auto"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M18 12H6"
+                        />
+                    </svg>
+                </button>
+                <span
+                    class="px-3"
+                    @contextmenu.prevent="context(() => (editCount = true))"
+                >
+                    {{ quantity }}
+                </span>
+                <button
+                    class="h-6 w-6 rounded bg-green-200 text-black p-0.5"
+                    @click="updateQuantity(Math.floor(quantity + 1))"
+                    @contextmenu.prevent
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="mx-auto"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 6v12m6-6H6"
+                        />
+                    </svg>
+                </button>
+            </div>
+            <form v-else @submit.prevent="handleSubmit" class="w-1/2 sm:w-1/3">
+                <AppInput
+                    class="bg-gray-50 px-1 py-0.5 text-lg rounded text-black w-full invalid:text-red-600 invalid:saturate-200"
+                    name="quantity"
+                    type="number"
+                    step="0.001"
+                    :modelValue="quantity"
+                    @blur="
+                        (e: Event) =>
+                            handleUpdateQuantity(e.target as HTMLInputElement)
+                    "
+                />
+            </form>
+            <div class="relative">
+                <AppInput
+                    class="bg-gray-100 invalid:text-red-600 invalid:saturate-200"
+                    type="number"
+                    :placeholder="lastPriceFormatted"
+                    :modelValue="unitPrice || ''"
+                    @input="unitPrice = $event.target.valueAsNumber"
+                />
+
+                <span
+                    v-if="total && quantity !== 1"
+                    class="absolute top-1/2 -translate-y-1/2 right-10 bg-gray-50 px-1 rounded"
+                    >{{ getCurrency(total) }}</span
+                >
+            </div>
+        </div>
+    </div>
+</template>
