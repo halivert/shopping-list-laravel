@@ -26,7 +26,9 @@ class UpdateShoppingDayRequest extends FormRequest
     {
         return [
             'touch' => 'sometimes|boolean',
-            'items' => 'array',
+            'date' => 'sometimes|date',
+
+            'items' => 'sometimes|array',
             'items.*.id' => [
                 'required',
                 'string',
@@ -37,7 +39,7 @@ class UpdateShoppingDayRequest extends FormRequest
             'items.*.quantity' => 'sometimes|numeric',
             'items.*.unitPrice' => 'sometimes|numeric',
 
-            'products' => 'array',
+            'products' => 'sometimes|array',
             'products.*.id' => [
                 'required',
                 'string',

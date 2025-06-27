@@ -1,64 +1,43 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
-import { Head, router, useForm, usePage } from "@inertiajs/vue3"
+import { useDebounceFn } from "@vueuse/core"
+import { Head, router } from "@inertiajs/vue3"
 
 import AppLayout from "@/layouts/AppLayout.vue"
-import { type BreadcrumbItem } from "@/types"
-import { ShoppingDay } from "@/types/ShoppingDay"
-import SortableItemList from "@/components/SortableItemList.vue"
-import { Product } from "@/types/Product"
+import type { BreadcrumbItem } from "@/types"
+import type { Product } from "@/types/Product"
+import type { ShoppingDay } from "@/types/ShoppingDay"
+import SortableItemList, { type Item } from "@/components/SortableItemList.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import NewProductInput from "@/components/shopping/NewProductInput.vue"
-
-const page = usePage()
+import { formatDate } from "@/composables/formatHelpers"
+import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
+import {
+    productToSortableListItem,
+    shoppingDayItemToSortableListItem,
+} from "@/composables/mapHelpers"
+import { useEditShoppingDay } from "@/composables/useEditShoppingDay"
+import EditShoppingDayDateInput from "@/components/shopping/EditShoppingDayDateInput.vue"
 
 const props = defineProps<{
     shoppingDay: ShoppingDay
     otherProducts: Product[]
 }>()
 
-const products = ref(
-    props.otherProducts.map((product) => ({ ...product, type: "product" }))
-)
-
-const items = ref(
-    props.shoppingDay.items?.map(({ product, id }) => ({
-        id,
-        name: product.name,
-        type: "item",
-    })) ?? []
-)
-
-watch(
-    () => props.shoppingDay.items,
-    (newItems) => {
-        if (!newItems) return
-
-        items.value = newItems.map(({ product, id }) => ({
-            id,
-            name: product.name,
-            type: "item",
-        }))
-    }
-)
-
-watch(
-    () => props.otherProducts,
-    (newItems) => {
-        products.value = newItems.map((product) => ({
-            ...product,
-            type: "product",
-        }))
-    }
-)
-
-function formatDate(strDate: string): string {
-    const date = new Date(strDate)
-
-    return new Intl.DateTimeFormat(page.props.lang, {
-        dateStyle: "medium",
-    }).format(date)
+function mapItems(items: ShoppingDay["items"]) {
+    return items?.map(shoppingDayItemToSortableListItem) ?? []
 }
+
+function mapProducts(products: Product[] | undefined) {
+    return products?.map(productToSortableListItem) ?? []
+}
+
+const shoppingDay = computed(() => props.shoppingDay)
+
+const products = ref(mapProducts(props.otherProducts))
+const items = ref<(Item & { type: "product" | "item" })[]>(
+    mapItems(shoppingDay.value.items)
+)
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     {
@@ -66,62 +45,79 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
         href: "/",
     },
     {
-        title: `Día de compras: ${formatDate(props.shoppingDay.date)}`,
+        title: `Día de compras: ${formatDate(shoppingDay.value.date)}`,
         href: "",
     },
 ])
 
-const productForm = useForm({ name: "", productId: undefined })
-function handleNewProduct() {
-    productForm.post(
-        route("shopping-days.products.create", {
-            shoppingDay: props.shoppingDay.id,
-        }),
-        {
-            preserveScroll: true,
-            onSuccess: () => (productForm.name = ""),
-        }
+const { form: productForm, handleSubmit: handleNewProduct } =
+    useCreateNewProductToShoppingDay(computed(() => shoppingDay.value.id))
+
+const groupedItemsWithIndex = computed(() =>
+    Object.groupBy(
+        items.value.map(({ id, type }, index) => ({
+            id,
+            index,
+            type,
+        })),
+        ({ type }) => (type === "item" ? "items" : "products")
     )
-}
+)
 
-function handleSaveShoppingDay() {
-    const itemsWithIndex = items.value.map(({ id, type }, index) => ({
-        id,
-        index,
-        type,
-    }))
+const autoSaveItems = useDebounceFn(function autoSaveItems() {
+    handleSaveShoppingDay({ redirect: false })
+}, 5 * 1000)
 
-    const newProducts = itemsWithIndex.filter((item) => item.type === "product")
-    const currentItems = itemsWithIndex.filter((item) => item.type === "item")
+watch(groupedItemsWithIndex, autoSaveItems)
 
+function handleSaveShoppingDay({ redirect }: { redirect: boolean }) {
     router.patch(
         route("shopping-days.update", {
             shoppingDay: props.shoppingDay.id,
         }),
-        {
-            items: currentItems,
-            products: newProducts,
-        },
+        groupedItemsWithIndex.value,
         {
             preserveScroll: true,
             onSuccess: () => {
-                router.get(
-                    route("shopping-days.show", {
-                        shoppingDay: props.shoppingDay.id,
-                    })
-                )
+                if (redirect) {
+                    router.get(
+                        route("shopping-days.show", {
+                            shoppingDay: props.shoppingDay.id,
+                        })
+                    )
+                }
             },
         }
     )
 }
+
+const {
+    isEditing: editDate,
+    form: editDateForm,
+    handleSubmit: handleSubmitDate,
+} = useEditShoppingDay(shoppingDay, groupedItemsWithIndex)
 </script>
 
 <template>
     <Head :title="`Día de compras: ${formatDate(props.shoppingDay.date)}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <header class="flex p-3 top-0 sticky bg-background z-10 justify-end">
-            <AppButton @click="handleSaveShoppingDay">Siguiente</AppButton>
+        <header
+            class="flex p-3 top-0 sticky bg-background z-10 justify-between"
+        >
+            <form @submit.prevent="handleSubmitDate">
+                <EditShoppingDayDateInput
+                    class="flex gap-2 items-center"
+                    v-model="editDateForm.date"
+                    v-model:isEditing="editDate"
+                >
+                    {{ formatDate(shoppingDay.date, "full") }}
+                </EditShoppingDayDateInput>
+            </form>
+
+            <AppButton @click="() => handleSaveShoppingDay({ redirect: true })">
+                Llenar
+            </AppButton>
         </header>
 
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">

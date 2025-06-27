@@ -2,22 +2,21 @@
 import { watch } from "vue"
 import { useDragAndDrop } from "@formkit/drag-and-drop/vue"
 
-interface Item {
+export interface Item {
     id: string
     name: string
 }
 
+interface Props {
+    group?: string
+    sortable?: boolean
+}
+
 const model = defineModel<Item[]>()
 
-const props = withDefaults(
-    defineProps<{
-        group?: string
-        sortable?: boolean
-    }>(),
-    {
-        sortable: true,
-    }
-)
+const props = withDefaults(defineProps<Props>(), {
+    sortable: true,
+})
 
 const [parent, items] = useDragAndDrop(model.value ?? [], {
     sortable: props.sortable,

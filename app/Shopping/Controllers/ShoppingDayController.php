@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -90,55 +91,77 @@ class ShoppingDayController extends Controller
         $attrs = $request->validated();
 
         DB::transaction(function () use ($attrs, $shoppingDay) {
-            $requestProducts = Arr::get($attrs, 'products', []);
             $requestItems = Arr::get($attrs, 'items', []);
 
-            $productNames = Product::query()
-                ->find(Arr::pluck($requestProducts, 'id'))
-                ->pluck('name', 'id');
+            /**
+             * First delete non existent items, in order to not delete created
+             * products
+             */
+            if (Arr::has($attrs, 'items')) {
+                $requestItems = Arr::get($attrs, 'items', []);
 
-            $itemsToDelete = $shoppingDay->items->except(
-                array_map(fn($item) => $item['id'], $requestItems)
-            );
+                $itemsToDelete = $shoppingDay->items->except(
+                    array_map(fn($item) => $item['id'], $requestItems)
+                );
 
-            // Delete items
-            $itemsToDelete->map(fn(ShoppingDayItem $item) => $item->delete());
+                // Delete items
+                $itemsToDelete->map(
+                    fn(ShoppingDayItem $item) => $item->delete()
+                );
 
-            // Create new products
-            $shoppingDay->items()->createMany(
-                collect($requestProducts)->map(fn($product) => [
-                    'product_id' => $product['id'],
-                    'index' => $product['index'],
-                    'name' => $productNames[$product['id']],
-                    'quantity' => str($productNames[$product['id']])
-                        ->after('-')->toInteger() ?: 1,
-                ])
-            );
+                // Update current items data
+                collect($requestItems)->each(
+                    function ($attrs) use ($shoppingDay) {
+                        $item = $shoppingDay->items->find($attrs['id']);
 
-            // Update current items data
-            collect($requestItems)->each(
-                function ($attrs) use ($shoppingDay) {
-                    $item = $shoppingDay->items->find($attrs['id']);
+                        $item->index = Arr::get($attrs, 'index', $item->index);
 
-                    $item->index = Arr::get($attrs, 'index', $item->index);
+                        $item->unit_price = Arr::get(
+                            $attrs,
+                            'unitPrice',
+                            $item->unit_price
+                        );
 
-                    $item->unit_price = Arr::get(
-                        $attrs,
-                        'unitPrice',
-                        $item->unit_price
-                    );
+                        $item->quantity = Arr::get(
+                            $attrs,
+                            'quantity',
+                            $item->quantity
+                        );
 
-                    $item->quantity = Arr::get(
-                        $attrs,
-                        'quantity',
-                        $item->quantity
-                    );
-
-                    if ($item->isDirty()) {
-                        $item->save();
+                        if ($item->isDirty()) {
+                            $item->save();
+                        }
                     }
-                }
-            );
+                );
+            }
+
+            /**
+             * Then create new products (those are not going to be in
+             * requestItems array)
+             */
+            if (Arr::has($attrs, 'products')) {
+                $requestProducts = Arr::get($attrs, 'products', []);
+                $productNames = Product::query()
+                    ->find(Arr::pluck($requestProducts, 'id'))
+                    ->pluck('name', 'id');
+
+                // Create new products
+                $shoppingDay->items()->createMany(
+                    collect($requestProducts)->map(fn($product) => [
+                        'product_id' => $product['id'],
+                        'index' => $product['index'],
+                        'name' => $productNames[$product['id']],
+                        'quantity' => str($productNames[$product['id']])
+                            ->after('-')->toInteger() ?: 1,
+                    ])
+                );
+            }
+
+
+            // Update shopping day date
+            if (Arr::has($attrs, 'date')) {
+                $shoppingDay->update(['date' => Carbon::parse($attrs['date'])]);
+            }
 
             if ($attrs['touch'] ?? false) {
                 $shoppingDay->touch();
