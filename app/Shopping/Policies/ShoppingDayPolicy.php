@@ -12,6 +12,16 @@ class ShoppingDayPolicy
     use HandlesAuthorization;
 
     /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user, User $owner): Response
+    {
+        return $user->can('view', $owner)
+            ? $this->allow()
+            : $this->denyAsNotFound();
+    }
+
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, ShoppingDay $shoppingDay): Response
@@ -24,9 +34,9 @@ class ShoppingDayPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, User $model): Response
+    public function create(User $user, User $owner): Response
     {
-        return $user->can('view', $model)
+        return $user->can('view', $owner)
             ? $this->allow()
             : $this->denyAsNotFound();
     }
