@@ -6,4 +6,5 @@ export interface ShoppingDay {
     date: string
     owner: User
     items?: ShoppingDayItem[]
+    updatedAt?: string
 }

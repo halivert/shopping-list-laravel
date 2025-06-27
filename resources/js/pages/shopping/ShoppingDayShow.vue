@@ -1,27 +1,17 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { Head, router, usePage } from "@inertiajs/vue3"
+import { Head, router } from "@inertiajs/vue3"
 
 import AppLayout from "@/layouts/AppLayout.vue"
 import { type BreadcrumbItem } from "@/types"
 import { ShoppingDay } from "@/types/ShoppingDay"
 import ShoppingList from "@/components/shopping/ShoppingList.vue"
-import { getCurrency } from "@/composables/formatHelpers"
+import { formatDate, getCurrency } from "@/composables/formatHelpers"
 import { ShoppingDayItem } from "@/types/ShoppingDayItem"
-
-const page = usePage()
 
 const props = defineProps<{
     shoppingDay: ShoppingDay
 }>()
-
-function formatDate(strDate: string): string {
-    const date = new Date(strDate)
-
-    return new Intl.DateTimeFormat(page.props.lang, {
-        dateStyle: "medium",
-    }).format(date)
-}
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     {
@@ -60,7 +50,14 @@ function handleSave(items: ShoppingDayItem[]) {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
-            <h2 class="text-lg font-semibold">Lista de compras</h2>
+            <div>
+                <h2 class="text-lg font-semibold flex justify-between">
+                    Lista de compras
+                </h2>
+                <small v-if="shoppingDay.updatedAt">
+                    (Actualizado: {{ formatDate(shoppingDay.updatedAt) }})
+                </small>
+            </div>
             <header
                 class="text-xl sticky top-0 pt-2 pb-1 bg-white flex justify-between z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
             >

@@ -9,3 +9,12 @@ export function getCurrency(number: number): string {
         currencyDisplay: "symbol",
     }).format(number)
 }
+
+export function formatDate(strDate: string): string {
+    const page = usePage()
+    const date = new Date(strDate)
+
+    return new Intl.DateTimeFormat(page.props.lang, {
+        dateStyle: "medium",
+    }).format(date)
+}

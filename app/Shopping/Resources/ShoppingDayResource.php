@@ -22,6 +22,10 @@ class ShoppingDayResource extends JsonResource
             'items' => ShoppingDayItemResource::collection(
                 $this->whenLoaded('items')
             ),
+            'updatedAt' => $this->when(
+                !$this->created_at->equalTo($this->updated_at),
+                $this->updated_at
+            )
         ];
     }
 }

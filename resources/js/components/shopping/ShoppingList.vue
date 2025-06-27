@@ -74,16 +74,16 @@ watch(
             </li>
         </ul>
 
-        <div class="flex gap-3 bottom-2 left-1 right-1 sticky mt-2">
+        <div class="flex gap-2 bottom-2 left-0 right-0 sticky mt-2">
             <AppButton
                 :as="Link"
                 :href="route('shopping-days.edit', { shoppingDay })"
-                class="flex-shrink flex-1"
+                class="flex-1"
                 variant="secondary"
             >
                 Editar
             </AppButton>
-            <AppButton class="flex-1" @click="emit('save', originalItems)"
+            <AppButton class="flex-[2]" @click="emit('save', originalItems)"
                 >Guardar</AppButton
             >
         </div>
