@@ -3,17 +3,17 @@ import { usePage } from "@inertiajs/vue3"
 import { CalendarDays, Dot } from "lucide-vue-next"
 
 import type { ShoppingDay } from "@/types/ShoppingDay"
-import { NavLinkItem } from "@/types"
+import type { NavLinkItem } from "@/types"
 import { formatDate } from "./formatHelpers"
 
 export function useSidebarShoppingDaysMenuItems(
-    initialShoppingDays: MaybeRef<ShoppingDay[] | undefined>
+    sidebarShoppingDays: MaybeRef<ShoppingDay[] | undefined>
 ) {
     const page = usePage()
 
     const sidebarShoppingDaysOwner = computed(() => {
         const firstShoppingDay: ShoppingDay | undefined =
-            unref(initialShoppingDays)?.at(0)
+            unref(sidebarShoppingDays)?.at(0)
 
         return firstShoppingDay?.owner
     })
@@ -42,13 +42,13 @@ export function useSidebarShoppingDaysMenuItems(
     })
 
     const sidebarShoppingDaysMenuItems = computed(() =>
-        unref(initialShoppingDays)?.length
+        unref(sidebarShoppingDays)?.length
             ? [
                   {
                       title: sidebarTitle.value,
                       icon: CalendarDays,
                       items:
-                          unref(initialShoppingDays)?.map(
+                          unref(sidebarShoppingDays)?.map(
                               (day): NavLinkItem => ({
                                   key: day.id,
                                   title: formatDate(day.date, "long"),
