@@ -55,7 +55,18 @@ class ShoppingDayController extends Controller
         Request $request,
         ShoppingDay $shoppingDay
     ): JsonResponse|Response {
-        $shoppingDay->load(['items']);
+        $shoppingDay->load([
+            'items.shoppingDay',
+            'items.product.shoppingDayItems.shoppingDay'
+        ]);
+
+        $shoppingDay->items->each(function (ShoppingDayItem $item) {
+            /** @var Product */
+            $product = $item->product;
+
+            $item->product->lastPrice = $product
+                ->getLastPrice($item->shoppingDay->date);
+        });
 
         $shoppingDayResource = ShoppingDayResource::make($shoppingDay);
 

@@ -6,4 +6,5 @@ export interface Product {
     owner?: User
     searchIndex?: number
     shoppingIndex?: number
+    lastPrice?: number
 }

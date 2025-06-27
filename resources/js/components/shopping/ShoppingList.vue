@@ -53,6 +53,7 @@ watch(
                     v-model:unitPrice="item.unitPrice"
                     v-model:quantity="item.quantity"
                     v-model:checked="item.checked"
+                    :lastPrice="item.product.lastPrice"
                 >
                     {{ item.product.name }}
                 </ShoppingListItem>
