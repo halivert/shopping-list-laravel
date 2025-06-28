@@ -149,6 +149,8 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
                     :placeholder="lastPriceFormatted"
                     :modelValue="unitPrice || ''"
                     @input="unitPrice = $event.target.valueAsNumber"
+                    min="0"
+                    step="0.001"
                 />
 
                 <span
