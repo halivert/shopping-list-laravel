@@ -78,7 +78,8 @@ function handleUpdateTotal(newTotal: number, first: boolean) {
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
             <div>
                 <h2 class="text-lg font-semibold flex justify-between">
-                    Lista de compras
+                    Lista de compras:
+                    {{ formatDate(props.shoppingDay.date, "long") }}
                 </h2>
                 <small v-if="shoppingDay.updatedAt">
                     (Actualizado: {{ formatDate(shoppingDay.updatedAt) }})
