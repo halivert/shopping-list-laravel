@@ -24,12 +24,10 @@ defineProps<{
 }>()
 
 function handleCreateShoppingDay() {
-    const today = new Date(new Date().toJSON().split("T")[0] + "T00:00")
-
     if (!user.value) return
 
     router.post(route("users.shopping-days.store", { owner: user.value.id }), {
-        date: today,
+        date: new Date(),
     })
 }
 </script>
