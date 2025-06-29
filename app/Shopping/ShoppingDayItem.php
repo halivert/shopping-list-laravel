@@ -2,7 +2,7 @@
 
 namespace App\Shopping;
 
-use App\Models\Product;
+use App\Products\Product;
 use App\Shopping\ShoppingDay;
 use Database\Factories\ShoppingDayItemFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;

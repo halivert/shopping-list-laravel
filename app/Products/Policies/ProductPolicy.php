@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Policies;
+namespace App\Products\Policies;
 
-use App\Models\Product;
+use App\Products\Product;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;

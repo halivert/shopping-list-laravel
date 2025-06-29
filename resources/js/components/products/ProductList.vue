@@ -41,6 +41,7 @@ function handleNewProduct() {
 
 function handleItemChange(event: FocusEvent | KeyboardEvent) {
     edit.value = undefined
+    if (productForm.processing) return
 
     if (!event.target) {
         return
@@ -58,6 +59,8 @@ function handleItemChange(event: FocusEvent | KeyboardEvent) {
     const productId = props.products[index].id
 
     if (!value) {
+        console.log("Deleting", productId)
+
         return productForm.delete(route("products.destroy", productId), {
             preserveScroll: true,
         })

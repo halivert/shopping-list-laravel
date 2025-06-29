@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Products;
 
+use App\Models\User;
 use App\Shopping\ShoppingDayItem;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,7 +36,7 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsTo<User, Product>
+     * @return BelongsTo<User>
      */
     public function owner(): BelongsTo
     {

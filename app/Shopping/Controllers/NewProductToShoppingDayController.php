@@ -3,7 +3,7 @@
 namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Products\Product;
 use App\Shopping\Resources\ShoppingDayItemResource;
 use App\Shopping\ShoppingDay;
 use App\Shopping\ShoppingDayItem;

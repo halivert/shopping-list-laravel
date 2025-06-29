@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Products\Policies\ProductPolicy;
+use App\Products\Product;
 use App\Shopping\Policies\ShoppingDayItemPolicy;
 use App\Shopping\Policies\ShoppingDayPolicy;
 use App\Shopping\ShoppingDay;
@@ -45,5 +47,6 @@ class AppServiceProvider extends ServiceProvider
          */
         Gate::policy(ShoppingDay::class, ShoppingDayPolicy::class);
         Gate::policy(ShoppingDayItem::class, ShoppingDayItemPolicy::class);
+        Gate::policy(Product::class, ProductPolicy::class);
     }
 }

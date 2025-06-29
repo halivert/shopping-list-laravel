@@ -4,7 +4,7 @@ namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
-use App\Models\Product;
+use App\Products\Product;
 use App\Models\User;
 use App\Shopping\Middleware\SidebarShoppingDaysMiddleware;
 use App\Shopping\Requests\StoreShoppingDayRequest;

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Products\Product;
 use App\Shopping\ShoppingDay;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

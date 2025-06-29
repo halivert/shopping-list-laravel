@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Product;
+use App\Products\Product;
 use App\Shopping\ShoppingDay;
 use App\Shopping\ShoppingDayItem;
 use Illuminate\Database\Eloquent\Factories\Factory;

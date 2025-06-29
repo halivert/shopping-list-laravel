@@ -2,7 +2,7 @@
 
 namespace App\Products\Requests;
 
-use App\Models\Product;
+use App\Products\Product;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;

@@ -4,7 +4,7 @@ namespace App\Products\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Access;
-use App\Models\Product;
+use App\Products\Product;
 use App\Models\User;
 use App\Products\Requests\StoreProductRequest;
 use App\Products\Requests\UpdateProductRequest;
