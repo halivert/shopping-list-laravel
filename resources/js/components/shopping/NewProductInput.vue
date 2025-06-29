@@ -3,17 +3,16 @@ import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 
+interface Props {
+    productsSuggestions: { id: string; name: string }[]
+    loading?: boolean
+}
+
 const model = defineModel<string>()
 
-withDefaults(
-    defineProps<{
-        productsSuggestions: { id: string; name: string }[]
-        loading?: boolean
-    }>(),
-    {
-        loading: false,
-    }
-)
+withDefaults(defineProps<Props>(), {
+    loading: false,
+})
 </script>
 
 <template>

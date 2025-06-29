@@ -39,9 +39,20 @@ const items = ref(
 )
 
 const updateForm = useForm({})
+const submitted = ref(false)
 
-function handleSave() {
+const autoSaveItems = useDebounceFn(
+    function autoSaveItems() {
+        handleSave()
+    },
+    10 * 1000,
+    { maxWait: 5 * 60 * 1000 }
+)
+
+function handleSave(event?: Event) {
     if (updateForm.recentlySuccessful || updateForm.processing) return
+
+    submitted.value = Boolean(event)
 
     updateForm
         .transform(() => ({
@@ -59,10 +70,6 @@ function handleSave() {
             { preserveScroll: true }
         )
 }
-
-const autoSaveItems = useDebounceFn(function autoSaveItems() {
-    handleSave()
-}, 5 * 1000)
 
 function handleUpdateTotal(newTotal: number, first: boolean) {
     total.value = newTotal
@@ -114,11 +121,11 @@ function handleUpdateTotal(newTotal: number, first: boolean) {
                     Editar
                 </AppButton>
                 <AppButton
-                    :disabled="updateForm.recentlySuccessful"
+                    :disabled="updateForm.recentlySuccessful && submitted"
                     class="flex-[2]"
                     @click="handleSave"
                 >
-                    <template v-if="updateForm.recentlySuccessful">
+                    <template v-if="updateForm.recentlySuccessful && submitted">
                         <Save :size="16" />
                         Guardado...
                     </template>

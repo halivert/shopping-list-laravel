@@ -28,6 +28,14 @@ class UpdateShoppingDayRequest extends FormRequest
             'touch' => 'sometimes|boolean',
             'date' => 'sometimes|date',
 
+            'products' => 'sometimes|array',
+            'products.*' => [
+                'required',
+                'string',
+                Rule::exists('products', 'id')
+                    ->where('owner_id', $this->shoppingDay->owner_id),
+            ],
+
             'items' => 'sometimes|array',
             'items.*.id' => [
                 'required',
@@ -35,18 +43,8 @@ class UpdateShoppingDayRequest extends FormRequest
                 Rule::exists('shopping_day_items', 'id')
                     ->where('shopping_day_id', $this->shoppingDay->id),
             ],
-            'items.*.index' => 'sometimes|integer',
-            'items.*.quantity' => 'sometimes|numeric',
             'items.*.unitPrice' => 'sometimes|numeric',
-
-            'products' => 'sometimes|array',
-            'products.*.id' => [
-                'required',
-                'string',
-                Rule::exists('products', 'id')
-                    ->where('owner_id', $this->shoppingDay->owner_id),
-            ],
-            'products.*.index' => 'required|integer'
+            'items.*.quantity' => 'sometimes|numeric',
         ];
     }
 }

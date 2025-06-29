@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -84,13 +85,11 @@ class ShoppingDayController extends Controller
     {
         $shoppingDay->load(['items']);
 
-        $products = $shoppingDay->owner->products->except(
-            $shoppingDay->items->pluck('product.id')->toArray()
-        );
+        $products = $shoppingDay->owner->products;
 
         return Inertia::render('shopping/ShoppingDayEdit', [
             'shoppingDay' => ShoppingDayResource::make($shoppingDay),
-            'otherProducts' => ProductResource::collection($products),
+            'products' => ProductResource::collection($products),
         ]);
     }
 
@@ -104,72 +103,34 @@ class ShoppingDayController extends Controller
         $attrs = $request->validated();
 
         DB::transaction(function () use ($attrs, $shoppingDay) {
-            $requestItems = Arr::get($attrs, 'items', []);
-
-            /**
-             * First delete non existent items, in order to not delete created
-             * products
-             */
-            if (Arr::has($attrs, 'items')) {
-                $requestItems = Arr::get($attrs, 'items', []);
-
-                $itemsToDelete = $shoppingDay->items->except(
-                    array_map(fn($item) => $item['id'], $requestItems)
-                );
-
-                // Delete items
-                $itemsToDelete->map(
-                    fn(ShoppingDayItem $item) => $item->delete()
-                );
-
-                // Update current items data
-                collect($requestItems)->each(
-                    function ($attrs) use ($shoppingDay) {
-                        $item = $shoppingDay->items->find($attrs['id']);
-
-                        $item->index = Arr::get($attrs, 'index', $item->index);
-
-                        $item->unit_price = Arr::get(
-                            $attrs,
-                            'unitPrice',
-                            $item->unit_price
-                        );
-
-                        $item->quantity = Arr::get(
-                            $attrs,
-                            'quantity',
-                            $item->quantity
-                        );
-
-                        if ($item->isDirty()) {
-                            $item->save();
-                        }
-                    }
-                );
-            }
-
-            /**
-             * Then create new products (those are not going to be in
-             * requestItems array)
-             */
             if (Arr::has($attrs, 'products')) {
-                $requestProducts = Arr::get($attrs, 'products', []);
-                $productNames = Product::query()
-                    ->find(Arr::pluck($requestProducts, 'id'))
-                    ->pluck('name', 'id');
-
-                // Create new products
-                $shoppingDay->items()->createMany(
-                    collect($requestProducts)->map(fn($product) => [
-                        'product_id' => $product['id'],
-                        'index' => $product['index'],
-                        'name' => $productNames[$product['id']],
-                        'quantity' => str($productNames[$product['id']])
-                            ->after('-')->toInteger() ?: 1,
-                    ])
-                );
+                $requestProducts = collect(Arr::get($attrs, 'products', []));
+                $this->updateProductsList($shoppingDay, $requestProducts);
             }
 
+            if (Arr::has($attrs, 'items')) {
+                $requestItems = collect(Arr::get($attrs, 'items', []));
+
+                $requestItems->each(function ($attrs) use ($shoppingDay) {
+                    $item = $shoppingDay->items->find($attrs['id']);
+
+                    $item->unit_price = Arr::get(
+                        $attrs,
+                        'unitPrice',
+                        $item->unit_price
+                    );
+
+                    $item->quantity = Arr::get(
+                        $attrs,
+                        'quantity',
+                        $item->quantity
+                    );
+
+                    if ($item->isDirty()) {
+                        $item->save();
+                    }
+                });
+            }
 
             // Update shopping day date
             if (Arr::has($attrs, 'date')) {
@@ -198,5 +159,49 @@ class ShoppingDayController extends Controller
         return $request->wantsJson()
             ? response()->json(204, null)
             : to_route('home');
+    }
+
+    /**
+     * Add products and delete items from a shopping day
+     *
+     * @param Collection<int, Product> $productIds
+     */
+    private function updateProductsList(
+        ShoppingDay $shoppingDay,
+        Collection $productIds
+    ): void {
+        $currentItemsProduct = $shoppingDay->items
+            ->pluck('product.id', 'id');
+
+        /**
+         * First delete non existent items, in order to not delete created
+         * products
+         */
+        $productIdsToDelete = $currentItemsProduct->diff($productIds);
+
+        if ($productIdsToDelete->count()) {
+            ShoppingDayItem::destroy($productIdsToDelete->keys());
+        }
+
+        /**
+         * Then we can create the new items, without touching the
+         * existent ones
+         */
+        $productIdsToCreate = $productIds->diff($currentItemsProduct);
+
+        /** @var Collection<int, Product> */
+        $dbProducts = Product::query()->find($productIdsToCreate);
+
+        $itemsToCreate = $dbProducts->map(
+            fn($product) => [
+                'product_id' => $product->id,
+                'index' => $product->shopping_index ?? 0,
+                'name' => $product->name,
+                'quantity' => str($product->name)
+                    ->after('-')->toInteger() ?: 1,
+            ]
+        );
+
+        $shoppingDay->items()->createMany($itemsToCreate);
     }
 }

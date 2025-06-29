@@ -36,12 +36,14 @@ class NewProductToShoppingDayController extends Controller
                     ['owner_id' => $shoppingDay->owner_id]
                 );
 
-                return $shoppingDay->items()->create([
-                    'product_id' => $product->id,
-                    'index' => $lastItem?->index ? $lastItem->index + 1 : 0,
-                    'quantity' => str($product->name)->after('-')
-                        ->toInteger() ?: 1,
-                ]);
+                return $shoppingDay->items()->firstOrCreate(
+                    ['product_id' => $product->id],
+                    [
+                        'index' => $lastItem?->index ? $lastItem->index + 1 : 0,
+                        'quantity' => str($product->name)->after('-')
+                            ->toInteger() ?: 1,
+                    ]
+                );
             }
         );
 
