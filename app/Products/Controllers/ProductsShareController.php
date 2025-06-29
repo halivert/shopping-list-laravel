@@ -54,7 +54,7 @@ class ProductsShareController extends Controller
             abort(404);
         }
 
-        $products = $accessible->products;
+        $products = $accessible->products()->orderBy('name')->get();
 
         $lastAccessibleFiveShoppingDays = $accessible?->shoppingDays()
             ->limit(5)->get();
