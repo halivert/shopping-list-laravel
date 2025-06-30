@@ -63,7 +63,7 @@ function setList() {
         <section class="flex flex-col h-full px-3 py-2 gap-3">
             <HeadingSmall
                 title="Ordenar productos"
-                description="Ordena los productos para encontrarlos más fácilmente"
+                description="Arrastra los productos para ordenarlos y encontrarlos más fácilmente"
             />
 
             <div
@@ -95,15 +95,15 @@ function setList() {
                 </label>
             </div>
 
-            <form
-                class="w-2/3"
+            <section
+                class="w-3/4"
                 :class="{ 'text-right self-end': updateProductsForm.list }"
             >
                 <SortableItemList
                     v-model="updateProductsForm.products"
                     @update:modelValue="handleSort"
                 />
-            </form>
+            </section>
         </section>
     </AppLayout>
 </template>
