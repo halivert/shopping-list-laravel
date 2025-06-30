@@ -47,7 +47,7 @@ function handleCreateShoppingDay() {
                     v-if="user"
                     variant="default"
                     @click="handleCreateShoppingDay"
-                    >¡De compras!</AppButton
+                    >Hacer lista</AppButton
                 >
 
                 <AppButton

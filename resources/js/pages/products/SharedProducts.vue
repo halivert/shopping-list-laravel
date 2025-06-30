@@ -47,7 +47,7 @@ function handleCreateShoppingDay() {
 
             <div class="flex gap-3 justify-end">
                 <AppButton variant="default" @click="handleCreateShoppingDay">
-                    ¡De compras!
+                    Hacer lista
                 </AppButton>
             </div>
         </div>

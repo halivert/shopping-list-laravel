@@ -121,7 +121,9 @@ const {
                 </EditShoppingDayDateInput>
             </form>
 
-            <AppButton form="productsForm" type="submit"> Llenar </AppButton>
+            <AppButton form="productsForm" type="submit">
+                ¡De compras!
+            </AppButton>
         </header>
 
         <form
