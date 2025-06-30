@@ -64,5 +64,5 @@ export function useSidebarShoppingDaysMenuItems(
             : undefined
     )
 
-    return { sidebarShoppingDaysMenuItems }
+    return { sidebarShoppingDaysMenuItems, sidebarShoppingDaysOwner }
 }

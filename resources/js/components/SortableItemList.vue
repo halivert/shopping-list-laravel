@@ -32,7 +32,7 @@ watch(model, (newItems) => newItems && (items.value = newItems))
 <template>
     <ul ref="parent" class="space-y-1">
         <li
-            class="px-2 py-1 rounded-sm hover:bg-secondary"
+            class="px-2 py-1 rounded-sm hover:bg-secondary cursor-move"
             v-for="item in items"
             :key="item.id"
         >
