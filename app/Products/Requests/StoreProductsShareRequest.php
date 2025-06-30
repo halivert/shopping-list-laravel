@@ -6,6 +6,7 @@ use App\Products\Product;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class StoreProductsShareRequest extends FormRequest
 {
@@ -25,7 +26,7 @@ class StoreProductsShareRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
+            'email' => ['required', 'email', Rule::notIn($this->user()->email)],
         ];
     }
 }
