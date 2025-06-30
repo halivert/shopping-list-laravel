@@ -4,6 +4,7 @@ namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\UserResource;
 use App\Products\Product;
 use App\Models\User;
 use App\Shopping\Middleware\SidebarShoppingDaysMiddleware;
@@ -29,6 +30,22 @@ class ShoppingDayController extends Controller
         $this->authorizeResource([ShoppingDay::class, 'owner'], 'shoppingDay');
 
         $this->middleware(SidebarShoppingDaysMiddleware::class);
+    }
+
+    public function index(Request $request, User $owner): JsonResponse|Response
+    {
+        $shoppingDaysPaginator = $owner->shoppingDays()->with('items')
+            ->paginate(15)
+            ->through(
+                fn($shoppingDay) => ShoppingDayResource::make($shoppingDay)
+            );
+
+        return $request->wantsJson()
+            ? response()->json($shoppingDaysPaginator)
+            : Inertia::render('shopping/ShoppingDayIndex', [
+                'owner' => UserResource::make($owner),
+                'shoppingDaysPaginator' => $shoppingDaysPaginator
+            ]);
     }
 
     /**

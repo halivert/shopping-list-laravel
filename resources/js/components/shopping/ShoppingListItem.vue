@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue"
 
 import AppInput from "../ui/input/Input.vue"
-import { getCurrency } from "@/composables/formatHelpers"
+import { formatCurrency } from "@/composables/formatHelpers"
 
 const unitPrice = defineModel<number>("unitPrice", { default: 0 })
 const quantity = defineModel<number>("quantity", { default: 0 })
@@ -30,7 +30,7 @@ const total = computed(() => {
 })
 
 const lastPriceFormatted = computed(() =>
-    props.lastPrice ? getCurrency(props.lastPrice) : ""
+    props.lastPrice ? formatCurrency(props.lastPrice) : ""
 )
 
 const editCount = ref(false)
@@ -156,7 +156,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
                 <span
                     v-if="total && quantity !== 1"
                     class="absolute top-1/2 -translate-y-1/2 right-10 bg-secondary px-1 rounded"
-                    >{{ getCurrency(total) }}</span
+                    >{{ formatCurrency(total) }}</span
                 >
             </div>
         </div>

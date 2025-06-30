@@ -58,10 +58,7 @@ export function useSidebarShoppingDaysMenuItems(
                                   icon: Dot,
                               })
                           ) ?? [],
-                      /**
-                       * TODO: enable when shopping days index is correct
-                       */
-                      // footer: sidebarFooter.value,
+                      footer: sidebarFooter.value,
                   },
               ]
             : undefined

@@ -12,7 +12,7 @@ Route::middleware(['auth'])->group(function () {
     )->parameters([
         'users' => 'owner',
         'shopping-days' => 'shoppingDay',
-    ])->only(['store', 'show', 'edit', 'update', 'destroy'])
+    ])->only(['index', 'store', 'show', 'edit', 'update', 'destroy'])
         ->shallow();
 
     Route::post(

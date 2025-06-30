@@ -1,6 +1,6 @@
 import { usePage } from "@inertiajs/vue3"
 
-export function getCurrency(number: number): string {
+export function formatCurrency(number: number): string {
     const page = usePage()
 
     return new Intl.NumberFormat(page.props.lang, {

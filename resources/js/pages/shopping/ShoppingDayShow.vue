@@ -9,7 +9,7 @@ import type { ShoppingDay } from "@/types/ShoppingDay"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import ShoppingList from "@/components/shopping/ShoppingList.vue"
-import { formatDate, getCurrency } from "@/composables/formatHelpers"
+import { formatDate, formatCurrency } from "@/composables/formatHelpers"
 
 const props = defineProps<{
     shoppingDay: ShoppingDay
@@ -96,7 +96,7 @@ function handleUpdateTotal(newTotal: number, first: boolean) {
                 class="text-xl sticky top-0 pt-2 pb-1 bg-background flex justify-between z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
             >
                 <span>
-                    Total: <span class="">{{ getCurrency(total) }}</span>
+                    Total: <span class="">{{ formatCurrency(total) }}</span>
                 </span>
                 <label class="text-xs inline-flex items-center gap-1">
                     Ocultar comprados
