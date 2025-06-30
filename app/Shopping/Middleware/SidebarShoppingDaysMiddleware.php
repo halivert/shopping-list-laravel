@@ -28,8 +28,7 @@ class SidebarShoppingDaysMiddleware extends Middleware
         }
 
         $lastFiveShoppingDays = fn() => ShoppingDayResource::collection(
-            $owner->shoppingDays()
-                ->limit(5)->get()
+            $owner->getLastNShoppingDays(5)
         );
 
         return [

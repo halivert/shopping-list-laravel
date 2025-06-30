@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Products\Product;
 use App\Shopping\ShoppingDay;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -57,5 +59,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(ShoppingDay::class, 'owner_id')
             ->latest('date');
+    }
+
+    /**
+     * @return Collection<int, ShoppingDay>
+     */
+    public function getLastNShoppingDays(int $number = 5): Collection
+    {
+        return $this->shoppingDays()->has('items')->limit($number)->get();
     }
 }

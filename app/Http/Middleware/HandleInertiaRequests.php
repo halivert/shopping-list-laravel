@@ -37,8 +37,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $lastFiveShoppingDays = $request->user()?->shoppingDays()
-            ->limit(5)->get();
+        $lastFiveShoppingDays = $request->user()?->getLastNShoppingDays(5);
 
         return [
             ...parent::share($request),
@@ -47,11 +46,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            ...($lastFiveShoppingDays ? [
-                'sidebarShoppingDays' => ShoppingDayResource::collection(
-                    $lastFiveShoppingDays
-                )
-            ] : []),
+            'sidebarShoppingDays' => $lastFiveShoppingDays
+                ? fn() => ShoppingDayResource::collection($lastFiveShoppingDays)
+                : null
         ];
     }
 }
