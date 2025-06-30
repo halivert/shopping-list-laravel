@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from "@inertiajs/vue3"
 
+import type { Access } from "@/types/Access"
+import type { BreadcrumbItem } from "@/types"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppInputError from "@/components/InputError.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 import AppButton from "@/components/ui/button/Button.vue"
-import { Access } from "@/types/Access"
-import { BreadcrumbItem } from "@/types"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Dashboard",
+        title: "Inicio",
         href: "/",
     },
     {
         title: "Compartir productos",
-        href: "/products-share/create",
+        href: "",
     },
 ]
 
@@ -148,7 +148,7 @@ function handleSubmit() {
                                     :href="
                                         route(
                                             'products-share.update',
-                                            access.id,
+                                            access.id
                                         )
                                     "
                                     method="put"
@@ -159,7 +159,7 @@ function handleSubmit() {
                                     :href="
                                         route(
                                             'products-share.destroy',
-                                            access.id,
+                                            access.id
                                         )
                                     "
                                     method="delete"

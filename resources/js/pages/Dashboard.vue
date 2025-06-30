@@ -10,7 +10,7 @@ import ProductList from "@/components/products/ProductList.vue"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: "Dashboard",
+        title: "Inicio",
         href: "/",
     },
 ]
@@ -33,7 +33,7 @@ function handleCreateShoppingDay() {
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Inicio" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">

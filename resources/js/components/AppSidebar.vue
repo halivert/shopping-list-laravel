@@ -28,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const mainNavItems = computed((): NavItem[] => [
     {
-        title: "Dashboard",
+        title: "Inicio",
         href: "/",
         icon: LayoutGrid,
     },

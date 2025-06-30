@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     {
-        title: "Dashboard",
+        title: "Inicio",
         href: "/",
     },
     {

@@ -27,7 +27,7 @@ const computedProducts = computed(() => props.products)
 const shoppingDay = computed(() => props.shoppingDay)
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     {
-        title: "Dashboard",
+        title: "Inicio",
         href: "/",
     },
     {
