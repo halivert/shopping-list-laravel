@@ -10,7 +10,7 @@ import type { Product } from "@/types/Product"
 import type { ShoppingDay } from "@/types/ShoppingDay"
 import AppButton from "@/components/ui/button/Button.vue"
 import NewProductInput from "@/components/shopping/NewProductInput.vue"
-import { formatDate } from "@/composables/formatHelpers"
+import { formatCurrency, formatDate } from "@/composables/formatHelpers"
 import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
 import { useEditShoppingDay } from "@/composables/useEditShoppingDay"
 import EditShoppingDayDateInput from "@/components/shopping/EditShoppingDayDateInput.vue"
@@ -102,28 +102,42 @@ const {
     shoppingDay,
     computed(() => ({ products: updateProductsForm.products }))
 )
+
+const estimatedTotal = computed(() =>
+    updateProductsForm.products.reduce((total, id) => {
+        const product = props.products.find((product) => product.id === id)
+        if (!product || !product.lastPrice) return total
+
+        const quantity = parseInt(product.name.split("-").at(1) ?? "")
+        if (Number.isNaN(quantity)) return total + product.lastPrice
+
+        return total + product.lastPrice * quantity
+    }, 0)
+)
 </script>
 
 <template>
     <Head :title="`Día de compras: ${formatDate(props.shoppingDay.date)}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <header
-            class="flex p-3 top-0 sticky bg-background z-10 justify-between"
-        >
-            <form @submit.prevent="handleSubmitDate">
-                <EditShoppingDayDateInput
-                    class="flex gap-2 items-center"
-                    v-model="editDateForm.date"
-                    v-model:isEditing="editDate"
-                >
-                    {{ formatDate(shoppingDay.date, "full") }}
-                </EditShoppingDayDateInput>
-            </form>
+        <header class="p-3 top-0 sticky bg-background z-10 space-y-1">
+            <div class="w-full flex justify-between items-center">
+                <form @submit.prevent="handleSubmitDate">
+                    <EditShoppingDayDateInput
+                        class="flex gap-2 items-center"
+                        v-model="editDateForm.date"
+                        v-model:isEditing="editDate"
+                    >
+                        {{ formatDate(shoppingDay.date, "full") }}
+                    </EditShoppingDayDateInput>
+                </form>
 
-            <AppButton form="productsForm" type="submit">
-                ¡De compras!
-            </AppButton>
+                <AppButton form="productsForm" type="submit">
+                    ¡De compras!
+                </AppButton>
+            </div>
+
+            <div>Total estimado: {{ formatCurrency(estimatedTotal) }}</div>
         </header>
 
         <form
@@ -144,7 +158,18 @@ const {
                 id="productsForm"
             >
                 <article v-for="product in computedProducts" :key="product.id">
-                    <label class="accent-primary dark:accent-secondary">
+                    <label
+                        :class="[
+                            'accent-primary dark:accent-secondary',
+                            {
+                                underline:
+                                    product.lastPrice &&
+                                    updateProductsForm.products.includes(
+                                        product.id
+                                    ),
+                            },
+                        ]"
+                    >
                         <input
                             type="checkbox"
                             v-model="updateProductsForm.products"

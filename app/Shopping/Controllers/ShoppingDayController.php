@@ -102,7 +102,14 @@ class ShoppingDayController extends Controller
     {
         $shoppingDay->load(['items']);
 
-        $products = $shoppingDay->owner->products->sortBy('search_index');
+        $products = $shoppingDay->owner->products()->with([
+            'shoppingDayItems.shoppingDay'
+        ])->orderBy('search_index')->get();
+
+        $products->each(function (Product $product) use ($shoppingDay) {
+            $product->lastPrice = $product
+                ->getLastPrice($shoppingDay->date);
+        });
 
         return Inertia::render('shopping/ShoppingDayEdit', [
             'shoppingDay' => ShoppingDayResource::make($shoppingDay),
