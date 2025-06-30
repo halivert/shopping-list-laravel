@@ -23,7 +23,7 @@ class UserProductsController extends Controller
     public function index(User $owner): Response
     {
         return Inertia::render('products/ProductsIndex', [
-            'owner' => fn() => UserResource::make($owner),
+            'owner' => UserResource::make($owner),
             'products' => fn() => ProductResource::collection($owner->products),
         ]);
     }

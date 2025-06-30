@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { Link, usePage } from "@inertiajs/vue3"
+
 import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
+    SidebarMenuSubButton,
     SidebarMenuItem,
+    SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-import { type NavItem, type SharedData } from "@/types"
-import { Link, usePage } from "@inertiajs/vue3"
-import SidebarMenuSubButton from "./ui/sidebar/SidebarMenuSubButton.vue"
+import type { NavItem, SharedData } from "@/types"
 
 defineProps<{
     items: NavItem[]
@@ -20,16 +22,30 @@ const page = usePage<SharedData>()
 <template>
     <SidebarGroup class="px-2 py-0">
         <SidebarMenu>
-            <SidebarMenuItem
-                v-for="item in items"
-                :key="item.key ?? item.title"
-            >
-                <template v-if="item.items">
-                    <SidebarGroupLabel>{{ item.title }}</SidebarGroupLabel>
+            <template v-for="item in items" :key="item.key ?? item.title">
+                <SidebarMenuItem v-if="item.href">
+                    <SidebarMenuButton
+                        as-child
+                        :is-active="item.href === page.url"
+                        :tooltip="item.title"
+                    >
+                        <Link :href="item.href">
+                            <component :is="item.icon" />
+                            <span>{{ item.title }}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
 
+                <SidebarMenuItem v-if="item.items">
+                    <SidebarMenuSubItem>
+                        <SidebarGroupLabel as="span">
+                            {{ item.title }}
+                        </SidebarGroupLabel>
+                    </SidebarMenuSubItem>
                     <SidebarMenuSubButton
                         as-child
                         v-for="subItem in item.items"
+                        :is-active="item.href === page.url"
                         :key="subItem.key ?? subItem.title"
                         :tooltip="subItem.title"
                     >
@@ -42,6 +58,7 @@ const page = usePage<SharedData>()
                     <SidebarMenuButton
                         as-child
                         v-if="item.footer"
+                        :is-active="item.footer.href === page.url"
                         :tooltip="item.title"
                     >
                         <Link :href="item.footer.href">
@@ -49,19 +66,8 @@ const page = usePage<SharedData>()
                             <span>{{ item.footer.title }}</span>
                         </Link>
                     </SidebarMenuButton>
-                </template>
-                <SidebarMenuButton
-                    v-else-if="item.href"
-                    as-child
-                    :is-active="item.href === page.url"
-                    :tooltip="item.title"
-                >
-                    <Link :href="item.href">
-                        <component :is="item.icon" />
-                        <span>{{ item.title }}</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
+                </SidebarMenuItem>
+            </template>
         </SidebarMenu>
     </SidebarGroup>
 </template>

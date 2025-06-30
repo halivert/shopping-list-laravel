@@ -91,6 +91,10 @@ html {
     body {
         @apply bg-background text-foreground;
     }
+
+    [v-cloak] {
+        @apply opacity-0;
+    }
 }
 
 @layer components {

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { usePage } from "@inertiajs/vue3"
+import { ShoppingBasket } from "lucide-vue-next"
 
 import type { BreadcrumbItemType, NavItem } from "@/types"
 import AppLayout from "@/layouts/app/AppSidebarLayout.vue"
 import { useSidebarShoppingDaysMenuItems } from "@/composables/useSidebarShoppingDaysMenuItems"
-import { ShoppingBasket } from "lucide-vue-next"
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[]
@@ -23,22 +23,28 @@ const { sidebarShoppingDaysMenuItems, sidebarShoppingDaysOwner } =
         computed(() => page.props.sidebarShoppingDays)
     )
 
-const productsLink = computed((): NavItem | undefined =>
+const productsLink = computed((): NavItem[] =>
     sidebarShoppingDaysOwner.value?.id === page.props.auth.user?.id
-        ? {
-              title: "Productos",
-              href: route("users.products.index", {
-                  owner: sidebarShoppingDaysOwner.value?.id,
-              }),
-              icon: ShoppingBasket,
-          }
-        : undefined
+        ? [
+              {
+                  title: "Productos",
+                  href: route(
+                      "users.products.index",
+                      {
+                          owner: sidebarShoppingDaysOwner.value?.id,
+                      },
+                      false
+                  ),
+                  icon: ShoppingBasket,
+              },
+          ]
+        : []
 )
 
 const sidebarMainItems = computed((): NavItem[] | undefined => [
     ...(props.sidebarMainItems ?? []),
-    ...(productsLink.value ? [productsLink.value] : []),
-    ...(sidebarShoppingDaysMenuItems.value ?? []),
+    ...productsLink.value,
+    ...sidebarShoppingDaysMenuItems.value,
 ])
 </script>
 

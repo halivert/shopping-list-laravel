@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { computed } from "vue"
 import { Head, useForm } from "@inertiajs/vue3"
 import { SwitchRoot, SwitchThumb } from "radix-vue"
 import { useDebounceFn } from "@vueuse/core"
@@ -15,10 +15,10 @@ interface Props {
     products: Product[]
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
+const breadcrumbs = computed((): BreadcrumbItem[] => [
     { title: "Inicio", href: "/" },
-    { title: "Ordenar productos", href: "" },
-]
+    { title: "Ordenar productos", href: "#" },
+])
 
 const props = defineProps<Props>()
 
@@ -57,9 +57,9 @@ function setList() {
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Ordenar productos" />
+    <Head title="Ordenar productos" />
 
+    <AppLayout :breadcrumbs="breadcrumbs">
         <section class="flex flex-col h-full px-3 py-2 gap-3">
             <HeadingSmall
                 title="Ordenar productos"

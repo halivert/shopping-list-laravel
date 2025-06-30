@@ -33,9 +33,13 @@ export function useSidebarShoppingDaysMenuItems(
         return sidebarShoppingDaysOwner.value
             ? {
                   title: "Ver más",
-                  href: route("users.shopping-days.index", {
-                      owner: sidebarShoppingDaysOwner.value,
-                  }),
+                  href: route(
+                      "users.shopping-days.index",
+                      {
+                          owner: sidebarShoppingDaysOwner.value,
+                      },
+                      false
+                  ),
                   icon: CalendarDays,
               }
             : undefined
@@ -52,16 +56,20 @@ export function useSidebarShoppingDaysMenuItems(
                               (day): NavLinkItem => ({
                                   key: day.id,
                                   title: formatDate(day.date, "long"),
-                                  href: route("shopping-days.show", {
-                                      shoppingDay: day.id,
-                                  }),
+                                  href: route(
+                                      "shopping-days.show",
+                                      {
+                                          shoppingDay: day.id,
+                                      },
+                                      false
+                                  ),
                                   icon: Dot,
                               })
                           ) ?? [],
                       footer: sidebarFooter.value,
                   },
               ]
-            : undefined
+            : []
     )
 
     return { sidebarShoppingDaysMenuItems, sidebarShoppingDaysOwner }
