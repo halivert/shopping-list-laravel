@@ -102,7 +102,7 @@ class ShoppingDayController extends Controller
     {
         $shoppingDay->load(['items']);
 
-        $products = $shoppingDay->owner->products;
+        $products = $shoppingDay->owner->products->sortBy('search_index');
 
         return Inertia::render('shopping/ShoppingDayEdit', [
             'shoppingDay' => ShoppingDayResource::make($shoppingDay),
