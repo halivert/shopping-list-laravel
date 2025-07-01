@@ -164,7 +164,7 @@ const estimatedTotal = computed(() =>
                             {
                                 underline:
                                     product.lastPrice &&
-                                    updateProductsForm.products.includes(
+                                    !updateProductsForm.products.includes(
                                         product.id
                                     ),
                             },
