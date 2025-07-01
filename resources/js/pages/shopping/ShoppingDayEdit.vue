@@ -163,8 +163,8 @@ const estimatedTotal = computed(() =>
                             'accent-primary dark:accent-secondary',
                             {
                                 underline:
-                                    product.lastPrice &&
-                                    !updateProductsForm.products.includes(
+                                    !product.lastPrice &&
+                                    updateProductsForm.products.includes(
                                         product.id
                                     ),
                             },
