@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, onBeforeUnmount } from "vue"
 import { Head, useForm } from "@inertiajs/vue3"
 import { SwitchRoot, SwitchThumb } from "radix-vue"
 import { useDebounceFn } from "@vueuse/core"
@@ -33,6 +33,7 @@ const updateProductsForm = useForm<{
 })
 
 const handleSort = useDebounceFn(function handleSort() {
+    updateProductsForm.cancel();
     if (updateProductsForm.processing) return
 
     updateProductsForm
@@ -45,7 +46,7 @@ const handleSort = useDebounceFn(function handleSort() {
             only: [],
             preserveScroll: true,
         })
-}, 1.5 * 1000)
+}, 500)
 
 function setList() {
     const sortFn: (a: Product, b: Product) => number = updateProductsForm.list
@@ -54,6 +55,10 @@ function setList() {
 
     updateProductsForm.products = props.products.toSorted(sortFn)
 }
+
+onBeforeUnmount(() => {
+    updateProductsForm.cancel();
+});
 </script>
 
 <template>
