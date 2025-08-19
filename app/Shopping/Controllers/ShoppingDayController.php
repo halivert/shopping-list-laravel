@@ -78,6 +78,11 @@ class ShoppingDayController extends Controller
             'items.product.shoppingDayItems.shoppingDay'
         ]);
 
+        $products = fn() => $shoppingDay->owner->products()->with([
+            'shoppingDayItems.shoppingDay'
+        ])->orderBy('search_index')->get();
+
+
         $shoppingDay->items->each(function (ShoppingDayItem $item) {
             /** @var Product */
             $product = $item->product;
@@ -91,7 +96,8 @@ class ShoppingDayController extends Controller
         return $request->wantsJson()
             ? response()->json($shoppingDayResource)
             : Inertia::render('shopping/ShoppingDayShow', [
-                'shoppingDay' => $shoppingDayResource
+                'shoppingDay' => $shoppingDayResource,
+                'products' => $products
             ]);
     }
 

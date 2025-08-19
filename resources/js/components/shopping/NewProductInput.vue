@@ -4,6 +4,7 @@ import AppButton from "@/components/ui/button/Button.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 
 interface Props {
+    label?: string;
     productsSuggestions: { id: string; name: string }[]
     loading?: boolean
 }
@@ -11,12 +12,13 @@ interface Props {
 const model = defineModel<string>()
 
 withDefaults(defineProps<Props>(), {
+    label: "Nuevo producto",
     loading: false,
 })
 </script>
 
 <template>
-    <AppLabel for="name">Nuevo producto</AppLabel>
+    <AppLabel for="name">{{ label }}</AppLabel>
     <div class="inline-flex w-full h-10 gap-2">
         <AppInput
             id="name"

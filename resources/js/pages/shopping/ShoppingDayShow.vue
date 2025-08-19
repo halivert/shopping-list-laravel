@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { Head, Link } from "@inertiajs/vue3"
+import { Head, Link, useForm } from "@inertiajs/vue3"
+import type { Page, PageProps } from "@inertiajs/core"
 
 import type { BreadcrumbItem } from "@/types"
 import type { ShoppingDay } from "@/types/ShoppingDay"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppButton from "@/components/ui/button/Button.vue"
+import NewProductInput from "@/components/shopping/NewProductInput.vue"
 import ShoppingList from "@/components/shopping/ShoppingList.vue"
 import { formatDate, formatCurrency } from "@/composables/formatHelpers"
+import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
+import { Product } from "@/types/Product"
 
-const props = defineProps<{
+interface Props extends PageProps {
     shoppingDay: ShoppingDay
-}>()
+    products?: Product[]
+}
+
+const props = defineProps<Props>()
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: "Inicio", href: "/" },
@@ -32,6 +39,37 @@ const items = ref(
         checked: Boolean(item.unitPrice),
     }))
 )
+
+const computedProducts = computed(() => props.products)
+const updateProductsForm = useForm({
+    products: props.shoppingDay.items?.map(({ product }) => product.id) ?? [],
+})
+
+const productsSuggestions = computed(() =>
+    computedProducts.value?.filter(
+        ({ id }) => !updateProductsForm.products.includes(id)
+    ) ?? []
+)
+
+const { form: productForm, handleSubmit: handleNewProduct } =
+    useCreateNewProductToShoppingDay(
+        computed(() => props.shoppingDay.id),
+        {
+            onSuccess: (response) => {
+                const responseProps = (response as Page<Props>).props
+
+                if (!("shoppingDay" in responseProps)) {
+                    return
+                }
+
+                updateProductsForm.products =
+                    responseProps.shoppingDay.items?.map(
+                        ({ product }) => product.id
+                    ) ?? []
+            },
+        }
+    )
+
 </script>
 
 <template>
@@ -65,6 +103,18 @@ const items = ref(
                 :shoppingDay="shoppingDay"
                 :hideChecked="hideChecked"
             />
+
+            <form
+                class="flex gap-2 my-3 flex-col mx-3"
+                @submit.prevent="handleNewProduct"
+            >
+                <NewProductInput
+                    label="Agregar producto"
+                    v-model="productForm.name"
+                    :loading="productForm.processing"
+                    :productsSuggestions="productsSuggestions"
+                />
+            </form>
 
             <div
                 class="flex gap-2 bottom-2 left-0 right-0 sticky mt-2 bg-background"
