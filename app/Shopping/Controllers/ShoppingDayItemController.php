@@ -5,12 +5,14 @@ namespace App\Shopping\Controllers;
 use App\Http\Controllers\Controller;
 use App\Products\Product;
 use App\Shopping\Requests\StoreShoppingDayItemRequest;
+use App\Shopping\Requests\UpdateShoppingDayItemRequest;
 use App\Shopping\Resources\ShoppingDayResource;
 use App\Shopping\ShoppingDay;
 use App\Shopping\ShoppingDayItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class ShoppingDayItemController extends Controller
@@ -58,6 +60,33 @@ class ShoppingDayItemController extends Controller
 
         return $request->wantsJson()
             ? response()->json(ShoppingDayResource::make($shoppingDay))
+            : back();
+    }
+
+    public function update(
+        UpdateShoppingDayItemRequest $request,
+        ShoppingDay $shoppingDay,
+        ShoppingDayItem $shoppingDayItem
+    ): JsonResponse|RedirectResponse {
+        $attrs = $request->validated();
+
+        $shoppingDayItem->update([
+            'unit_price' => Arr::get(
+                $attrs,
+                'unitPrice',
+                $shoppingDayItem->unit_price
+            ),
+            'quantity' => Arr::get(
+                $attrs,
+                'quantity',
+                $shoppingDayItem->quantity
+            ),
+        ]);
+
+        $shoppingDay->touch();
+
+        return $request->wantsJson()
+            ? response()->json(null, 204)
             : back();
     }
 

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { Head, Link, useForm } from "@inertiajs/vue3"
-import { Save } from "lucide-vue-next"
-import { useDebounceFn } from "@vueuse/core"
+import { Head, Link } from "@inertiajs/vue3"
 
 import type { BreadcrumbItem } from "@/types"
 import type { ShoppingDay } from "@/types/ShoppingDay"
@@ -16,10 +14,7 @@ const props = defineProps<{
 }>()
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
-    {
-        title: "Inicio",
-        href: "/",
-    },
+    { title: "Inicio", href: "/" },
     {
         title: `Día de compras: ${formatDate(props.shoppingDay.date)}`,
         href: "",
@@ -34,48 +29,9 @@ const items = ref(
         ...item,
         quantity: item.quantity ?? 1,
         unitPrice: item.unitPrice ?? 0,
-        checked: false,
+        checked: Boolean(item.unitPrice),
     }))
 )
-
-const updateForm = useForm({})
-const submitted = ref(false)
-
-const autoSaveItems = useDebounceFn(
-    function autoSaveItems() {
-        handleSave()
-    },
-    10 * 1000,
-    { maxWait: 5 * 60 * 1000 }
-)
-
-function handleSave(event?: Event) {
-    if (updateForm.recentlySuccessful || updateForm.processing) return
-
-    submitted.value = Boolean(event)
-
-    updateForm
-        .transform(() => ({
-            touch: true,
-            items: items.value?.map((item) => ({
-                id: item.id,
-                unitPrice: item.unitPrice,
-                quantity: item.quantity,
-            })),
-        }))
-        .patch(
-            route("shopping-days.update", {
-                shoppingDay: props.shoppingDay.id,
-            }),
-            { preserveScroll: true }
-        )
-}
-
-function handleUpdateTotal(newTotal: number, first: boolean) {
-    total.value = newTotal
-
-    if (!first) autoSaveItems()
-}
 </script>
 
 <template>
@@ -105,8 +61,9 @@ function handleUpdateTotal(newTotal: number, first: boolean) {
             </header>
             <ShoppingList
                 v-model="items"
+                v-model:total="total"
+                :shoppingDay="shoppingDay"
                 :hideChecked="hideChecked"
-                @updateTotal="handleUpdateTotal"
             />
 
             <div
@@ -119,17 +76,6 @@ function handleUpdateTotal(newTotal: number, first: boolean) {
                     variant="secondary"
                 >
                     Editar
-                </AppButton>
-                <AppButton
-                    :disabled="updateForm.recentlySuccessful && submitted"
-                    class="flex-[2]"
-                    @click="handleSave"
-                >
-                    <template v-if="updateForm.recentlySuccessful && submitted">
-                        <Save :size="16" />
-                        Guardado...
-                    </template>
-                    <template v-else> Guardar </template>
                 </AppButton>
             </div>
         </div>

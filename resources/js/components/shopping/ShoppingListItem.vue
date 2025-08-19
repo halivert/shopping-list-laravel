@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue"
 
 import AppInput from "../ui/input/Input.vue"
 import { formatCurrency } from "@/composables/formatHelpers"
+import { useDebounceFn } from "@vueuse/core"
 
 const unitPrice = defineModel<number>("unitPrice", { default: 0 })
 const quantity = defineModel<number>("quantity", { default: 0 })
@@ -11,12 +12,6 @@ const checked = defineModel<boolean>("checked")
 const props = defineProps<{
     lastPrice?: number
 }>()
-
-watch(
-    unitPrice,
-    (unitPrice) => (checked.value = !Number.isNaN(unitPrice) && unitPrice > 0),
-    { immediate: true }
-)
 
 const updateQuantity = (newQuantity: number) => {
     if (newQuantity <= 0) return
@@ -64,6 +59,10 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
     updateQuantity(quantity)
     editCount.value = false
 }
+
+const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
+    checked.value = Boolean(unitPrice.value)
+}, 1000)
 </script>
 
 <template>
@@ -149,6 +148,7 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
                     :placeholder="lastPriceFormatted"
                     :modelValue="unitPrice || ''"
                     @input="unitPrice = $event.target.valueAsNumber"
+                    @blur="handleMaybeChecked"
                     min="0"
                     step="0.001"
                 />

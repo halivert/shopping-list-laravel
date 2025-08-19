@@ -1,21 +1,22 @@
 <script setup lang="ts">
-import { computed, watch } from "vue"
+import { computed, watchEffect } from "vue"
+import { useDebounceFn } from "@vueuse/core"
+import { useForm } from "@inertiajs/vue3"
 
 import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
 import ShoppingListItem from "./ShoppingListItem.vue"
+import { ShoppingDay } from "@/types/ShoppingDay"
 
 const model = defineModel<(ShoppingDayItem & { checked: boolean })[]>()
+const total = defineModel<number>("total")
 
 const props = withDefaults(
     defineProps<{
+        shoppingDay: ShoppingDay
         hideChecked?: boolean
     }>(),
     { hideChecked: false }
 )
-
-const emit = defineEmits<{
-    updateTotal: [total: number, first: boolean]
-}>()
 
 const computedItems = computed(
     () =>
@@ -24,8 +25,8 @@ const computedItems = computed(
             : model.value) ?? []
 )
 
-const total = computed(
-    () =>
+watchEffect(() => {
+    total.value =
         model.value?.reduce((total, item) => {
             if (Number.isNaN(item.unitPrice) || Number.isNaN(item.quantity)) {
                 return total
@@ -33,13 +34,39 @@ const total = computed(
 
             return total + item.unitPrice * item.quantity
         }, 0) ?? 0
-)
+})
 
-watch(
-    total,
-    (total, lastTotal) => emit("updateTotal", total, lastTotal == undefined),
-    { immediate: true }
-)
+const updateForm = useForm({})
+
+const handleUpdateUnitPrice = useDebounceFn(function handleUpdateUnitPrice(
+    itemId: string,
+    unitPrice: number
+) {
+    updateForm
+        .transform(() => ({ unitPrice }))
+        .patch(
+            route("shopping-days.items.update", {
+                shoppingDay: props.shoppingDay.id,
+                shoppingDayItem: itemId,
+            }),
+            { async: true, preserveScroll: true }
+        )
+}, 500)
+
+const handleUpdateQuantity = useDebounceFn(function handleUpdateQuantity(
+    itemId: string,
+    quantity: number
+) {
+    updateForm
+        .transform(() => ({ quantity }))
+        .patch(
+            route("shopping-days.items.update", {
+                shoppingDay: props.shoppingDay.id,
+                shoppingDayItem: itemId,
+            }),
+            { async: true, preserveScroll: true }
+        )
+}, 500)
 </script>
 
 <template>
@@ -54,6 +81,8 @@ watch(
                     v-model:quantity="item.quantity"
                     v-model:checked="item.checked"
                     :lastPrice="item.product.lastPrice"
+                    @update:unitPrice="handleUpdateUnitPrice(item.id, $event)"
+                    @update:quantity="handleUpdateQuantity(item.id, $event)"
                 >
                     {{ item.product.name }}
                 </ShoppingListItem>

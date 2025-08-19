@@ -26,5 +26,5 @@ Route::middleware(['auth'])->group(function () {
     )->parameters([
         'shopping-days' => 'shoppingDay',
         'items' => 'shoppingDayItem',
-    ])->only(['store']);
+    ])->only(['store', 'update']);
 });
