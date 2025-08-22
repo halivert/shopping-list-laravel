@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router, useForm } from "@inertiajs/vue3"
+import { useForm } from "@inertiajs/vue3"
 
 import type { ShoppingDay } from "@/types/ShoppingDay"
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue"
+import { computed, ref } from "vue"
+import { useDebounceFn } from "@vueuse/core"
 
 import AppInput from "../ui/input/Input.vue"
 import { formatCurrency } from "@/composables/formatHelpers"
-import { useDebounceFn } from "@vueuse/core"
 
 const unitPrice = defineModel<number>("unitPrice", { default: 0 })
 const quantity = defineModel<number>("quantity", { default: 0 })
