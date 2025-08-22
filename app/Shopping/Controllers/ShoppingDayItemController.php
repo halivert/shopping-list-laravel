@@ -4,6 +4,7 @@ namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Products\Product;
+use App\Shopping\Events\ShoppingDayItemUpdated;
 use App\Shopping\Requests\StoreShoppingDayItemRequest;
 use App\Shopping\Requests\UpdateShoppingDayItemRequest;
 use App\Shopping\Resources\ShoppingDayResource;
@@ -82,6 +83,8 @@ class ShoppingDayItemController extends Controller
                 $shoppingDayItem->quantity
             ),
         ]);
+
+        ShoppingDayItemUpdated::dispatch($shoppingDayItem->fresh());
 
         $shoppingDay->touch();
 

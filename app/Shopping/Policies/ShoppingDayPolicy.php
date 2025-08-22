@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Shopping\ShoppingDay;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Log;
 
 class ShoppingDayPolicy
 {

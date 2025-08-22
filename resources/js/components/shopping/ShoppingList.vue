@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, watchEffect } from "vue"
+import { computed, onMounted, onUnmounted, watchEffect } from "vue"
 import { useDebounceFn } from "@vueuse/core"
 import { useForm } from "@inertiajs/vue3"
+import { useEcho } from "@laravel/echo-vue"
 
 import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
 import ShoppingListItem from "./ShoppingListItem.vue"
@@ -67,6 +68,27 @@ const handleUpdateQuantity = useDebounceFn(function handleUpdateQuantity(
             { async: true, preserveScroll: true }
         )
 }, 500)
+
+const echo = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
+    `shopping-day-updated.${props.shoppingDay.id}`,
+    "Shopping\\Events\\ShoppingDayItemUpdated",
+    ({ shoppingDayItem }) => {
+        const index =
+            model.value?.findIndex(({ id }) => shoppingDayItem.id === id) ?? -1
+        if (model.value && index >= 0) {
+            model.value[index].quantity = shoppingDayItem.quantity
+            model.value[index].unitPrice = shoppingDayItem.unitPrice
+        }
+    }
+)
+
+onMounted(() => {
+    echo.listen()
+})
+
+onUnmounted(() => {
+    echo.leave()
+})
 </script>
 
 <template>

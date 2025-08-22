@@ -45,10 +45,11 @@ const updateProductsForm = useForm({
     products: props.shoppingDay.items?.map(({ product }) => product.id) ?? [],
 })
 
-const productsSuggestions = computed(() =>
-    computedProducts.value?.filter(
-        ({ id }) => !updateProductsForm.products.includes(id)
-    ) ?? []
+const productsSuggestions = computed(
+    () =>
+        computedProducts.value?.filter(
+            ({ id }) => !updateProductsForm.products.includes(id)
+        ) ?? []
 )
 
 const { form: productForm, handleSubmit: handleNewProduct } =
@@ -69,7 +70,6 @@ const { form: productForm, handleSubmit: handleNewProduct } =
             },
         }
     )
-
 </script>
 
 <template>
