@@ -73,9 +73,14 @@ const echo = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
     `shopping-day-updated.${props.shoppingDay.id}`,
     "Shopping\\Events\\ShoppingDayItemUpdated",
     ({ shoppingDayItem }) => {
+        console.log("Receiving message")
         const index =
             model.value?.findIndex(({ id }) => shoppingDayItem.id === id) ?? -1
         if (model.value && index >= 0) {
+            if (model.value[index].unitPrice !== shoppingDayItem.unitPrice) {
+                model.value[index].checked = Boolean(shoppingDayItem.unitPrice)
+            }
+
             model.value[index].quantity = shoppingDayItem.quantity
             model.value[index].unitPrice = shoppingDayItem.unitPrice
         }
