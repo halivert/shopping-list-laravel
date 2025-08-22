@@ -85,6 +85,7 @@ function handleItemChange(event: FocusEvent | KeyboardEvent) {
                 @click="edit = i"
                 @keyup.enter="handleItemChange"
                 @blur="handleItemChange"
+                :key="product.id"
             >
                 {{ product.name }}
             </li>
