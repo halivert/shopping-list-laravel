@@ -26,7 +26,7 @@
         "laravel-echo": "2.2.6",
         "pusher-js": "8.4.0",
         "@formkit/drag-and-drop": "0.5.3",
-        "@inertiajs/vue3": "2.2.21",
+        "@inertiajs/vue3": "3.0.3",
         "@laravel/echo-vue": "2.2.6",
         "@vitejs/plugin-vue": "6.0.2",
         "@vueuse/core": "14.1.0",
