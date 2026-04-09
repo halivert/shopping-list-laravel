@@ -42,7 +42,7 @@
         "tailwindcss": "3.4.0",
         "tailwindcss-animate": "1.0.7",
         "typescript": "5.9.3",
-        "vite": "7.2.7",
+        "vite": "7.3.2",
         "vue": "3.5.25",
         "ziggy-js": "2.6.0"
     },
