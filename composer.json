@@ -11,10 +11,10 @@
     "require": {
         "php": "^8.2",
         "inertiajs/inertia-laravel": "3.0.5",
-        "laravel/framework": "12.56.0",
+        "laravel/framework": "13.4.0",
         "laravel/reverb": "1.10.0",
         "laravel/socialite": "5.26.1",
-        "laravel/tinker": "2.10.1",
+        "laravel/tinker": "3.0.0",
         "socialiteproviders/google": "4.1.0",
         "tightenco/ziggy": "2.6.2"
     },
