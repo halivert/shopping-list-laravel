@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import AppLogoIcon from "@/components/AppLogoIcon.vue"
 import { Link, usePage } from "@inertiajs/vue3"
+import type { PageProps } from "@inertiajs/core"
 
-const page = usePage()
+interface Quote {
+    message: string
+    author: string
+}
+
+interface AuthLayoutProps extends PageProps {
+    name: string
+    quote?: Quote
+}
+
+const page = usePage<AuthLayoutProps>()
 const name = page.props.name
 const quote = page.props.quote
 

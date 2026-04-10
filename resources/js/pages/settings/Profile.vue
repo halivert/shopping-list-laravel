@@ -22,7 +22,7 @@ const page = usePage<SharedData>()
 const user = page.props.auth.user
 
 const form = useForm({
-    name: user.name,
+    name: user?.name ?? '',
 })
 
 const submit = () => {

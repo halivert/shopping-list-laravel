@@ -85,10 +85,10 @@ onBeforeUnmount(() => {
                     id="list"
                     v-model:checked="updateProductsForm.list"
                     @update:checked="setList"
-                    class="w-12 h-7 px-0.5 focus-within:outline focus-within:outline-secondary flex bg-primary/50 shadow-sm rounded-full relative cursor-default"
+                    class="w-12 h-7 px-0.5 focus-within:outline-solid focus-within:outline-secondary flex bg-primary/50 shadow-xs rounded-full relative cursor-default"
                 >
                     <SwitchThumb
-                        class="block size-6 my-auto bg-white shadow-sm rounded-full transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-5"
+                        class="block size-6 my-auto bg-white shadow-xs rounded-full transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-5"
                     />
                 </SwitchRoot>
                 <label

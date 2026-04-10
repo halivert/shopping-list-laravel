@@ -47,10 +47,10 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage()
 const auth = computed(() => page.props.auth)
 
-const isCurrentRoute = computed(() => (url: string) => page.url === url)
+const isCurrentRoute = computed(() => (url?: string) => !!url && page.url === url)
 
 const activeItemStyles = computed(
-    () => (url: string) =>
+    () => (url?: string) =>
         isCurrentRoute.value(url)
             ? "text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
             : "",
@@ -223,7 +223,7 @@ const rightNavItems: NavItem[] = []
                         </div>
                     </div>
 
-                    <DropdownMenu>
+                    <DropdownMenu v-if="auth.user">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 variant="ghost"
@@ -241,7 +241,7 @@ const rightNavItems: NavItem[] = []
                                     <AvatarFallback
                                         class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"
                                     >
-                                        {{ getInitials(auth.user?.name) }}
+                                        {{ getInitials(auth.user.name) }}
                                     </AvatarFallback>
                                 </Avatar>
                             </Button>
