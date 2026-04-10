@@ -69,7 +69,7 @@ const handleUpdateQuantity = useDebounceFn(function handleUpdateQuantity(
         )
 }, 500)
 
-const echo = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
+const echoUpdated = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
     `shopping-day-updated.${props.shoppingDay.id}`,
     "Shopping\\Events\\ShoppingDayItemUpdated",
     ({ shoppingDayItem }) => {
@@ -86,12 +86,30 @@ const echo = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
     }
 )
 
+const echoCreated = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
+    `shopping-day-updated.${props.shoppingDay.id}`,
+    "Shopping\\Events\\ShoppingDayItemCreated",
+    ({ shoppingDayItem }) => {
+        const alreadyExists = model.value?.some(({ id }) => id === shoppingDayItem.id)
+        if (!alreadyExists) {
+            model.value?.push({
+                ...shoppingDayItem,
+                quantity: shoppingDayItem.quantity ?? 1,
+                unitPrice: shoppingDayItem.unitPrice ?? 0,
+                checked: Boolean(shoppingDayItem.unitPrice),
+            })
+        }
+    }
+)
+
 onMounted(() => {
-    echo.listen()
+    echoUpdated.listen()
+    echoCreated.listen()
 })
 
 onUnmounted(() => {
-    echo.leave()
+    echoUpdated.leave()
+    echoCreated.leave()
 })
 </script>
 

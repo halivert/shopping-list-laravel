@@ -4,6 +4,7 @@ namespace App\Shopping\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Products\Product;
+use App\Shopping\Events\ShoppingDayItemCreated;
 use App\Shopping\Resources\ShoppingDayItemResource;
 use App\Shopping\ShoppingDay;
 use App\Shopping\ShoppingDayItem;
@@ -46,6 +47,8 @@ class NewProductToShoppingDayController extends Controller
                 );
             }
         );
+
+        ShoppingDayItemCreated::dispatch($shoppingDayItem->load('product'));
 
         return $request->wantsJson()
             ? response()->json(
