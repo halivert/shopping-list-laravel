@@ -67,6 +67,14 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                     responseProps.shoppingDay.items?.map(
                         ({ product }) => product.id
                     ) ?? []
+
+                items.value =
+                    responseProps.shoppingDay.items?.map((item) => ({
+                        ...item,
+                        quantity: item.quantity ?? 1,
+                        unitPrice: item.unitPrice ?? 0,
+                        checked: Boolean(item.unitPrice),
+                    })) ?? []
             },
         }
     )
