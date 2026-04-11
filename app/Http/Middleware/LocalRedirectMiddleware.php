@@ -23,8 +23,12 @@ class LocalRedirectMiddleware
             return $next($request);
 
         $url = URL::full();
-        return redirect(
-            str($url)->replace("http://$replace", config('app.url'))
-        );
+        $redirectUrl = str($url)->replace("http://$replace", config('app.url'))->toString();
+
+        if ($redirectUrl === $url) {
+            return $next($request);
+        }
+
+        return redirect($redirectUrl);
     }
 }
