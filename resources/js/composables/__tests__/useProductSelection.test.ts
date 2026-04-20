@@ -165,29 +165,29 @@ describe("useProductSelection", () => {
             },
         ]
 
-        it("initialises quantities from existing items", () => {
+        it("initialises quantities from existing items by product id", () => {
             const { getQuantity } = useProductSelection(
                 ref(products),
                 ["a", "c"],
                 existingItems
             )
-            expect(getQuantity("item-1")).toBe(2)
-            expect(getQuantity("item-2")).toBe(6)
+            expect(getQuantity("a")).toBe(2)
+            expect(getQuantity("c")).toBe(6)
         })
 
-        it("returns 1 as default quantity for items with no record", () => {
+        it("returns 1 as default quantity for products with no record", () => {
             const { getQuantity } = useProductSelection(ref(products), [])
-            expect(getQuantity("unknown-item")).toBe(1)
+            expect(getQuantity("unknown-product")).toBe(1)
         })
 
-        it("setQuantity updates the quantity for a given item id", () => {
+        it("setQuantity updates the quantity for a given product id", () => {
             const { getQuantity, setQuantity } = useProductSelection(
                 ref(products),
                 ["a"],
                 existingItems
             )
-            setQuantity("item-1", 5)
-            expect(getQuantity("item-1")).toBe(5)
+            setQuantity("a", 5)
+            expect(getQuantity("a")).toBe(5)
         })
 
         it("setQuantity ignores values less than or equal to zero", () => {
@@ -196,21 +196,33 @@ describe("useProductSelection", () => {
                 ["a"],
                 existingItems
             )
-            setQuantity("item-1", 0)
-            setQuantity("item-1", -3)
-            expect(getQuantity("item-1")).toBe(2)
+            setQuantity("a", 0)
+            setQuantity("a", -3)
+            expect(getQuantity("a")).toBe(2)
         })
 
-        it("getItemsPayload returns array of id/quantity pairs for all tracked items", () => {
+        it("getItemsPayload maps item ids to locally tracked quantities", () => {
             const { setQuantity, getItemsPayload } = useProductSelection(
                 ref(products),
                 ["a", "c"],
                 existingItems
             )
-            setQuantity("item-2", 3)
-            const payload = getItemsPayload()
+            setQuantity("c", 3)
+            const payload = getItemsPayload(existingItems)
             expect(payload).toContainEqual({ id: "item-1", quantity: 2 })
             expect(payload).toContainEqual({ id: "item-2", quantity: 3 })
+        })
+
+        it("getItemsPayload only includes items that exist server-side", () => {
+            const { getItemsPayload } = useProductSelection(
+                ref(products),
+                ["a", "b"],
+                existingItems
+            )
+            // product "b" has no server item — should not appear in payload
+            const payload = getItemsPayload(existingItems)
+            expect(payload.map((p) => p.id)).not.toContain("b")
+            expect(payload).toHaveLength(existingItems.length)
         })
     })
 })

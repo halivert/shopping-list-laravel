@@ -40,7 +40,7 @@ function closeModal() {
 <template>
     <AppDialog>
         <DialogTrigger as-child>
-            <AppButton class="basis-1/2" variant="destructive">
+            <AppButton variant="destructive">
                 Borrar
             </AppButton>
         </DialogTrigger>

@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from "vue"
+import { computed, reactive, ref, type Ref } from "vue"
 import type { Product } from "@/types/Product"
 import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
 
@@ -10,23 +10,23 @@ export function useProductSelection(
     const searchQuery = ref("")
     const selectedIds = ref<string[]>([...initialSelectedIds])
 
-    const itemQuantities = ref<Record<string, number>>(
-        Object.fromEntries(initialItems.map((item) => [item.id, item.quantity ?? 1]))
+    const itemQuantities = reactive<Record<string, number>>(
+        Object.fromEntries(initialItems.map((item) => [item.product.id, item.quantity ?? 1]))
     )
 
-    function getQuantity(itemId: string): number {
-        return itemQuantities.value[itemId] ?? 1
+    function getQuantity(productId: string): number {
+        return itemQuantities[productId] ?? 1
     }
 
-    function setQuantity(itemId: string, quantity: number) {
+    function setQuantity(productId: string, quantity: number) {
         if (quantity <= 0) return
-        itemQuantities.value = { ...itemQuantities.value, [itemId]: quantity }
+        itemQuantities[productId] = quantity
     }
 
-    function getItemsPayload(): { id: string; quantity: number }[] {
-        return Object.entries(itemQuantities.value).map(([id, quantity]) => ({
-            id,
-            quantity,
+    function getItemsPayload(items: ShoppingDayItem[]): { id: string; quantity: number }[] {
+        return items.map((item) => ({
+            id: item.id,
+            quantity: itemQuantities[item.product.id] ?? 1,
         }))
     }
 

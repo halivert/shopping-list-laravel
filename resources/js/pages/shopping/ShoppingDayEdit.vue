@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import { useDebounceFn } from "@vueuse/core"
 import { Head, router, useForm } from "@inertiajs/vue3"
 import type { Page, PageProps } from "@inertiajs/core"
@@ -9,7 +9,6 @@ import AppLayout from "@/layouts/AppLayout.vue"
 import type { BreadcrumbItem } from "@/types"
 import type { Product } from "@/types/Product"
 import type { ShoppingDay } from "@/types/ShoppingDay"
-import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
 import AppButton from "@/components/ui/button/Button.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import Separator from "@/components/ui/separator/Separator.vue"
@@ -64,26 +63,25 @@ const {
     props.shoppingDay.items ?? []
 )
 
-// Helper: look up ShoppingDayItem by product id
-function itemForProduct(productId: string): ShoppingDayItem | undefined {
-    return props.shoppingDay.items?.find(
-        ({ product }) => product.id === productId
-    )
-}
+type SaveStatus = "idle" | "pending" | "saving" | "saved"
+const saveStatus = ref<SaveStatus>("idle")
+let savedTimer: ReturnType<typeof setTimeout> | null = null
 
 const autoSaveItems = useDebounceFn(function autoSaveItems() {
     updateProductsForm.products = selectedIds.value
-    updateProductsForm.items = getItemsPayload()
+    updateProductsForm.items = getItemsPayload(props.shoppingDay.items ?? [])
     handleSaveShoppingDay({ async: true })
 }, 6 * 1000)
 
 function handleToggleProduct(id: string, checked: boolean) {
     toggleProduct(id, checked)
+    saveStatus.value = "pending"
     autoSaveItems()
 }
 
-function handleQuantityChange(itemId: string, quantity: number) {
-    setQuantity(itemId, quantity)
+function handleQuantityChange(productId: string, quantity: number) {
+    setQuantity(productId, quantity)
+    saveStatus.value = "pending"
     autoSaveItems()
 }
 
@@ -110,7 +108,7 @@ const { form: productForm, handleSubmit: handleNewProduct } =
 
 function handleSaveProducts() {
     updateProductsForm.products = selectedIds.value
-    updateProductsForm.items = getItemsPayload()
+    updateProductsForm.items = getItemsPayload(props.shoppingDay.items ?? [])
     handleSaveShoppingDay({ async: false })
 }
 
@@ -122,6 +120,9 @@ function handleSaveShoppingDay({ async }: { async: boolean }) {
         {
             async,
             preserveScroll: true,
+            onStart: () => {
+                if (async) saveStatus.value = "saving"
+            },
             onSuccess: () => {
                 if (!async) {
                     return router.get(
@@ -130,6 +131,27 @@ function handleSaveShoppingDay({ async }: { async: boolean }) {
                         })
                     )
                 }
+                saveStatus.value = "saved"
+                if (savedTimer) clearTimeout(savedTimer)
+                savedTimer = setTimeout(() => {
+                    saveStatus.value = "idle"
+                }, 2000)
+
+                // Newly-toggled products are created with qty=1 by the server.
+                // If the user changed the quantity before the first save, sync it now.
+                const staleItems = (props.shoppingDay.items ?? []).filter(
+                    (item) => getQuantity(item.product.id) !== item.quantity
+                )
+                if (staleItems.length > 0) {
+                    updateProductsForm.products = selectedIds.value
+                    updateProductsForm.items = getItemsPayload(
+                        props.shoppingDay.items ?? []
+                    )
+                    handleSaveShoppingDay({ async: true })
+                }
+            },
+            onError: () => {
+                if (async) saveStatus.value = "idle"
             },
         }
     )
@@ -155,10 +177,7 @@ const estimatedTotal = computed(() =>
         const product = props.products.find((p) => p.id === productId)
         if (!product || !product.lastPrice) return total
 
-        const item = itemForProduct(productId)
-        const quantity = item
-            ? getQuantity(item.id)
-            : parseInt(product.name.split("-").at(1) ?? "") || 1
+        const quantity = getQuantity(productId)
 
         return total + product.lastPrice * quantity
     }, 0)
@@ -188,6 +207,9 @@ const estimatedTotal = computed(() =>
 
             <div class="text-sm text-muted-foreground">
                 Total estimado: {{ formatCurrency(estimatedTotal) }}
+                <span v-if="saveStatus === 'pending'"> · Pendiente…</span>
+                <span v-else-if="saveStatus === 'saving'"> · Guardando…</span>
+                <span v-else-if="saveStatus === 'saved'"> · Guardado</span>
             </div>
 
             <div class="relative">
@@ -247,15 +269,9 @@ const estimatedTotal = computed(() =>
                                 "
                             />
                             <QuantityControl
-                                v-if="itemForProduct(product.id)"
-                                :modelValue="
-                                    getQuantity(itemForProduct(product.id)!.id)
-                                "
+                                :modelValue="getQuantity(product.id)"
                                 @update:modelValue="
-                                    handleQuantityChange(
-                                        itemForProduct(product.id)!.id,
-                                        $event
-                                    )
+                                    handleQuantityChange(product.id, $event)
                                 "
                             />
                         </div>
@@ -273,7 +289,7 @@ const estimatedTotal = computed(() =>
                     <p class="text-xs font-medium text-muted-foreground px-2 mb-1">
                         Disponibles ({{ availableProducts.length }})
                     </p>
-                    <div class="columns-2">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-0.5">
                         <ProductCheckboxItem
                             v-for="product in availableProducts"
                             :key="product.id"
@@ -287,14 +303,21 @@ const estimatedTotal = computed(() =>
                 </div>
 
                 <p
-                    v-if="filteredProducts.length === 0"
+                    v-if="filteredProducts.length === 0 && searchQuery"
                     class="text-sm text-muted-foreground px-2 py-4 text-center"
                 >
                     Sin resultados para "{{ searchQuery }}"
                 </p>
+
+                <p
+                    v-if="computedProducts.length === 0 && !searchQuery"
+                    class="text-sm text-muted-foreground px-2 py-4 text-center"
+                >
+                    Aún no tienes productos. Agrega el primero arriba.
+                </p>
             </form>
 
-            <div class="flex justify-end">
+            <div class="flex justify-end mt-6 pt-6 border-t">
                 <DeleteShoppingDay :shoppingDay="shoppingDay" />
             </div>
         </div>
