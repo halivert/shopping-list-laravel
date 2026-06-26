@@ -16,4 +16,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('users.products', UserProductsController::class)
         ->only(['index', 'store'])
         ->parameters(['users' => 'owner']);
+
+    Route::get('users/{owner}/products/sort', [UserProductsController::class, 'sort'])
+        ->name('users.products.sort');
 });

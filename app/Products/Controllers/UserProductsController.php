@@ -22,8 +22,25 @@ class UserProductsController extends Controller
 
     public function index(User $owner): Response
     {
+        $this->authorize('view', $owner);
+
+        $products = $owner->products()->with(['shoppingDayItems.shoppingDay'])
+            ->orderBy('name')->get();
+
+        $products->each(fn(Product $p) => $p->lastPrice = $p->getLastPrice());
+
         return Inertia::render('products/ProductsIndex', [
-            'owner' => UserResource::make($owner),
+            'owner'    => UserResource::make($owner),
+            'products' => fn() => ProductResource::collection($products),
+        ]);
+    }
+
+    public function sort(User $owner): Response
+    {
+        $this->authorize('view', $owner);
+
+        return Inertia::render('products/ProductsSort', [
+            'owner'    => UserResource::make($owner),
             'products' => fn() => ProductResource::collection($owner->products),
         ]);
     }
