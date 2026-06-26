@@ -12,6 +12,10 @@ const props = defineProps<{
     user?: User
 }>()
 
+const emit = defineEmits<{
+    changeQuantity: [productId: string, next: number]
+}>()
+
 // ── Add new product ───────────────────────────────────────────────────────────
 
 const productForm = useForm({
@@ -52,15 +56,7 @@ const debouncedPatchRequired = useDebounceFn(
     (product: Product, value: boolean) => {
         patchProduct(product, { is_required: value })
     },
-    300
-)
-
-const debouncedPatchQuantity = useDebounceFn(
-    (product: Product, value: number) => {
-        if (value < 1) return
-        patchProduct(product, { required_quantity: value })
-    },
-    600
+    500
 )
 
 function handleRequiredChange(product: Product, event: Event) {
@@ -69,14 +65,15 @@ function handleRequiredChange(product: Product, event: Event) {
 }
 
 function decrementQuantity(product: Product) {
-    if (product.requiredQuantity <= 1) return
+    const next = product.requiredQuantity - 1
+    if (next < 1) return
     if ("vibrate" in navigator) navigator.vibrate(50)
-    debouncedPatchQuantity(product, product.requiredQuantity - 1)
+    emit("changeQuantity", product.id, next)
 }
 
 function incrementQuantity(product: Product) {
     if ("vibrate" in navigator) navigator.vibrate(50)
-    debouncedPatchQuantity(product, product.requiredQuantity + 1)
+    emit("changeQuantity", product.id, product.requiredQuantity + 1)
 }
 </script>
 

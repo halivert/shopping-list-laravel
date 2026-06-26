@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import { router, usePage } from "@inertiajs/vue3"
 import { useEcho } from "@laravel/echo-vue"
+import { useDebounceFn } from "@vueuse/core"
 
 import type { Product } from "@/types/Product"
 import type { User } from "@/types"
@@ -47,6 +48,41 @@ const estimatedTotal = computed(() =>
         return sum + p.lastPrice * p.requiredQuantity
     }, 0)
 )
+
+// ── Optimistic quantity updates ───────────────────────────────────────────────
+
+// One debounced saver per product so rapid edits on different products
+// don't cancel each other.
+const quantitySavers = new Map<
+    string,
+    ReturnType<typeof useDebounceFn>
+>()
+
+function getQuantitySaver(productId: string) {
+    if (!quantitySavers.has(productId)) {
+        quantitySavers.set(
+            productId,
+            useDebounceFn((next: number) => {
+                router.put(
+                    route("products.update", productId),
+                    { required_quantity: next },
+                    { preserveScroll: true, preserveState: true }
+                )
+            }, 600)
+        )
+    }
+    return quantitySavers.get(productId)!
+}
+
+function onChangeQuantity(productId: string, next: number) {
+    // Optimistic: mutate the local items immediately so the stepper and
+    // summary header update before the server responds.
+    const item = items.value.find((p) => p.id === productId)
+    if (item) item.requiredQuantity = next
+
+    // Debounced: fire a single PUT after the user stops tapping.
+    getQuantitySaver(productId)(next)
+}
 
 // ── Start shopping day ────────────────────────────────────────────────────────
 
@@ -129,7 +165,11 @@ onUnmounted(() => {
         <!-- Checklist -->
         <section class="px-3 flex-1 overflow-y-auto">
             <!-- Pass owner only for a shared page so add-product sends user_id -->
-            <ProductChecklist :products="items" :user="owner" />
+            <ProductChecklist
+                :products="items"
+                :user="owner"
+                @change-quantity="onChangeQuantity"
+            />
         </section>
 
         <!-- Footer -->
