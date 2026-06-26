@@ -56,7 +56,7 @@ class ProductsShareController extends Controller
         }
 
         $products = $accessible->products()->with(['shoppingDayItems.shoppingDay'])
-            ->orderBy('search_index')->get();
+            ->orderBy('name')->get();
 
         $products->each(function (Product $product) {
             $product->lastPrice = $product->getLastPrice();

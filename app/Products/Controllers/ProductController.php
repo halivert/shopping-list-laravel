@@ -14,12 +14,40 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Inertia\Inertia;
+use Inertia\Response;
+use App\Http\Resources\ProductResource;
 
 class ProductController extends Controller
 {
     public function __construct()
     {
         $this->authorizeResource(Product::class);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Product $product): Response
+    {
+        $product->load('shoppingDayItems.shoppingDay');
+        $product->lastPrice = $product->getLastPrice();
+
+        return Inertia::render('products/ProductShow', [
+            'product'   => ProductResource::make($product),
+            'purchases' => $product->getPurchaseHistory(),
+            'stats'     => [
+                'timesBought'       => $product->getTimesBought(),
+                'averagePrice'      => $product->getAverageUnitPrice(),
+                'minPrice'          => $product->getMinUnitPrice(),
+                'maxPrice'          => $product->getMaxUnitPrice(),
+                'averageQuantity'   => $product->getAverageQuantity(),
+                'avgDaysBetween'    => $product->getAverageDaysBetweenPurchases(),
+                'daysPerUnit'       => $product->getDaysPerUnit(),
+                'estimatedDuration' => $product->getEstimatedDuration(),
+                'totalSpent'        => $product->getTotalSpent(),
+            ],
+        ]);
     }
 
     /**
