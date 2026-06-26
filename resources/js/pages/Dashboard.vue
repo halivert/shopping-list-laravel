@@ -83,7 +83,7 @@ function handleCreateShoppingDay() {
 
             <!-- Checklist -->
             <section class="px-3 flex-1 overflow-y-auto">
-                <ProductChecklist :products="products" :user="user ?? undefined" />
+                <ProductChecklist :products="products" />
             </section>
 
             <!-- Footer actions -->
