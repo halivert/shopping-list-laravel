@@ -4,6 +4,8 @@ namespace App\Products\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Access;
+use App\Products\Events\ProductCreated;
+use App\Products\Events\ProductUpdated;
 use App\Products\Product;
 use App\Models\User;
 use App\Products\Requests\StoreProductRequest;
@@ -51,11 +53,13 @@ class ProductController extends Controller
         }
 
         if (Arr::has($attrs, 'name')) {
-            $targetUser->products()->create($attrs);
+            $product = $targetUser->products()->create($attrs);
+            ProductCreated::dispatch($product);
         } else if (Arr::has($attrs, 'products')) {
-            $targetUser->products()->createMany(
+            $products = $targetUser->products()->createMany(
                 array_map(fn($item) => ['name' => $item], $attrs['products'])
             );
+            $products->each(fn ($product) => ProductCreated::dispatch($product));
         }
 
         return $request->wantsJson()
@@ -72,9 +76,11 @@ class ProductController extends Controller
     ): JsonResponse|RedirectResponse {
         $attrs = $request->validated();
 
-        $product->update([
-            'name' => $attrs['name'],
-        ]);
+        $product->update(
+            collect($attrs)->only(['name', 'is_required', 'required_quantity'])->all()
+        );
+
+        ProductUpdated::dispatch($product);
 
         return $request->wantsJson()
             ? response()->json(204, null)
