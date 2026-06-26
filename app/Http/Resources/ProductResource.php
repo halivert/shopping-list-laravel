@@ -21,6 +21,8 @@ class ProductResource extends JsonResource
             'searchIndex' => $this->whenNotNull($this->search_index),
             'shoppingIndex' => $this->whenNotNull($this->shopping_index),
             'lastPrice' => $this->whenNotNull($this->lastPrice),
+            'isRequired' => $this->is_required,
+            'requiredQuantity' => $this->required_quantity,
         ];
     }
 }

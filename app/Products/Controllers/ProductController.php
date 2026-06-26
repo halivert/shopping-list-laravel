@@ -72,9 +72,9 @@ class ProductController extends Controller
     ): JsonResponse|RedirectResponse {
         $attrs = $request->validated();
 
-        $product->update([
-            'name' => $attrs['name'],
-        ]);
+        $product->update(
+            collect($attrs)->only(['name', 'is_required', 'required_quantity'])->all()
+        );
 
         return $request->wantsJson()
             ? response()->json(204, null)

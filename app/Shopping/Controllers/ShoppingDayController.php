@@ -57,13 +57,35 @@ class ShoppingDayController extends Controller
     ): JsonResponse|RedirectResponse {
         $attrs = $request->validated();
 
-        $shoppingDay = $owner->shoppingDays()->create([
-            'date' => Carbon::parse($attrs['date']),
-        ]);
+        $shoppingDay = DB::transaction(function () use ($attrs, $owner) {
+            $shoppingDay = $owner->shoppingDays()->create([
+                'date' => Carbon::parse($attrs['date']),
+            ]);
+
+            $requiredProducts = $owner->products()
+                ->where('is_required', true)
+                ->get();
+
+            $itemsToCreate = $requiredProducts->map(
+                fn($product) => [
+                    'product_id' => $product->id,
+                    'index' => $product->shopping_index ?? 0,
+                    'quantity' => $product->required_quantity,
+                ]
+            );
+
+            $shoppingDay->items()->createMany($itemsToCreate);
+
+            $owner->products()
+                ->where('is_required', true)
+                ->update(['is_required' => false]);
+
+            return $shoppingDay;
+        });
 
         return $request->wantsJson()
             ? response()->json(ShoppingDayResource::make($shoppingDay))
-            : to_route('shopping-days.edit', ['shoppingDay' => $shoppingDay]);
+            : to_route('shopping-days.show', ['shoppingDay' => $shoppingDay]);
     }
 
     /**

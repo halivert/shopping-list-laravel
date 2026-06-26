@@ -7,4 +7,6 @@ export interface Product {
     searchIndex?: number
     shoppingIndex?: number
     lastPrice?: number
+    isRequired: boolean
+    requiredQuantity: number
 }
