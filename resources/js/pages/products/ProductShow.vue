@@ -78,9 +78,9 @@ const chartPoints = computed(() =>
     <Head :title="product.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 px-4 py-4 max-w-lg mx-auto">
+        <div class="flex w-full flex-col gap-6 px-4 py-4 max-w-lg mx-auto">
             <!-- Header + rename -->
-            <div class="flex items-center gap-2">
+            <div class="flex min-h-10 items-center gap-2">
                 <template v-if="isEditing">
                     <form
                         class="flex flex-1 items-center gap-2"
@@ -88,7 +88,7 @@ const chartPoints = computed(() =>
                     >
                         <AppInput
                             v-model="renameForm.name"
-                            class="flex-1"
+                            class="h-9 flex-1"
                             autofocus
                             required
                         />
@@ -105,7 +105,7 @@ const chartPoints = computed(() =>
                     </form>
                 </template>
                 <template v-else>
-                    <h1 class="text-xl font-semibold flex-1">{{ product.name }}</h1>
+                    <h1 class="text-xl font-semibold flex-1 truncate px-3">{{ product.name }}</h1>
                     <AppButton
                         variant="ghost"
                         size="sm"
