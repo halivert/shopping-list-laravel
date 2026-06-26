@@ -9,6 +9,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class)
         ->only(['show', 'store', 'update', 'destroy']);
 
+    Route::post('products/{product}/restore', [ProductController::class, 'restore'])
+        ->name('products.restore')
+        ->withTrashed();
+
     Route::resource('products-share', ProductsShareController::class)
         ->only(['create', 'show', 'store', 'update', 'destroy'])
         ->parameters(['products-share' => 'access']);

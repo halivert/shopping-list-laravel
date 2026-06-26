@@ -53,12 +53,8 @@ function cancelEdit() {
 
 // ── Delete ────────────────────────────────────────────────────────────────────
 
-const confirmingDelete = ref(false)
-
 function deleteProduct() {
-    router.delete(route("products.destroy", props.product.id), {
-        onSuccess: () => router.visit("/"),
-    })
+    router.delete(route("products.destroy", props.product.id))
 }
 
 // ── Duration label ────────────────────────────────────────────────────────────
@@ -224,27 +220,10 @@ const chartPoints = computed(() =>
 
             <!-- Delete -->
             <div class="pt-4 border-t">
-                <template v-if="confirmingDelete">
-                    <p class="text-sm text-muted-foreground mb-2">
-                        ¿Eliminar "{{ product.name }}"? Esta acción no se puede deshacer.
-                    </p>
-                    <div class="flex gap-2">
-                        <AppButton variant="destructive" @click="deleteProduct">
-                            Sí, eliminar
-                        </AppButton>
-                        <AppButton
-                            variant="ghost"
-                            @click="confirmingDelete = false"
-                        >
-                            Cancelar
-                        </AppButton>
-                    </div>
-                </template>
                 <AppButton
-                    v-else
                     variant="ghost"
                     class="text-destructive hover:text-destructive"
-                    @click="confirmingDelete = true"
+                    @click="deleteProduct"
                 >
                     Eliminar producto
                 </AppButton>

@@ -116,13 +116,37 @@ class ProductController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(
         Request $request,
         Product $product
     ): JsonResponse|RedirectResponse {
+        $ownerId = $product->owner_id;
+        $productId = $product->id;
+        $productName = $product->name;
+
         $product->delete();
+
+        return $request->wantsJson()
+            ? response()->json(204, null)
+            : redirect()
+                ->route('users.products.index', ['owner' => $ownerId])
+                ->with('deletedProduct', ['id' => $productId, 'name' => $productName]);
+    }
+
+    /**
+     * Restore a soft-deleted product (undo delete).
+     */
+    public function restore(
+        Request $request,
+        string $product
+    ): JsonResponse|RedirectResponse {
+        $model = Product::withTrashed()->findOrFail($product);
+
+        $this->authorize('delete', $model);
+
+        $model->restore();
 
         return $request->wantsJson()
             ? response()->json(204, null)
