@@ -19,6 +19,10 @@ const props = defineProps<{
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: "Inicio", href: "/" },
+    {
+        title: "Productos",
+        href: route("users.products.index", { owner: props.product.owner?.id }),
+    },
     { title: props.product.name, href: "" },
 ])
 
