@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->boolean('is_required')->default(false)->after('shopping_index');
-            $table->unsignedInteger('required_quantity')->default(1)->after('is_required');
+            $table->boolean('is_required')->default(false);
+            $table->unsignedInteger('required_quantity')->default(1);
         });
     }
 

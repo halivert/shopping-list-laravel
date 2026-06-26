@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue"
 import { router, useForm } from "@inertiajs/vue3"
 import { useDebounceFn } from "@vueuse/core"
 
@@ -13,9 +12,7 @@ const props = defineProps<{
     user?: User
 }>()
 
-// ── Inline add/edit/delete (same as ProductList.vue) ──────────────────────────
-
-const edit = ref<number | undefined>(undefined)
+// ── Add new product ───────────────────────────────────────────────────────────
 
 const productForm = useForm({
     name: "",
@@ -37,35 +34,6 @@ function handleNewProduct() {
             user_id: props.user ? props.user.id : undefined,
         }))
         .post(route("products.store"), {
-            onSuccess: () => productForm.reset(),
-            preserveScroll: true,
-        })
-}
-
-function handleItemChange(event: FocusEvent | KeyboardEvent) {
-    edit.value = undefined
-    if (productForm.processing) return
-
-    if (!event.target) return
-
-    const target = event.target as HTMLLIElement
-    const index = parseInt(target.dataset.index ?? "", 10)
-    const value = target.innerText.trim()
-    target.innerText = value
-
-    if (value === props.products[index].name) return
-
-    const productId = props.products[index].id
-
-    if (!value) {
-        return productForm.delete(route("products.destroy", productId), {
-            preserveScroll: true,
-        })
-    }
-
-    productForm
-        .transform(() => ({ name: value }))
-        .put(route("products.update", productId), {
             onSuccess: () => productForm.reset(),
             preserveScroll: true,
         })
@@ -116,7 +84,7 @@ function incrementQuantity(product: Product) {
     <section class="py-3">
         <ul class="space-y-2">
             <li
-                v-for="(product, i) in products"
+                v-for="product in products"
                 :key="product.id"
                 class="flex items-center gap-3 py-1"
             >
@@ -129,16 +97,11 @@ function incrementQuantity(product: Product) {
                     @change="handleRequiredChange(product, $event)"
                 />
 
-                <!-- Product name (contenteditable for inline rename/delete) -->
+                <!-- Product name — tapping toggles the checkbox via <label for> -->
                 <label
                     :for="`req-${product.id}`"
-                    :contenteditable="edit === i ? 'plaintext-only' : 'false'"
-                    :data-index="i"
                     class="flex-1 cursor-pointer select-none"
                     :class="{ 'font-medium': product.isRequired }"
-                    @click.self="edit = i"
-                    @keyup.enter="handleItemChange"
-                    @blur="handleItemChange"
                 >
                     {{ product.name }}
                 </label>
