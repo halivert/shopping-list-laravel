@@ -17,3 +17,12 @@ Broadcast::channel(
         );
     }
 );
+
+Broadcast::channel(
+    'product-list.{ownerId}',
+    function (User $user, string $ownerId) {
+        $owner = User::query()->find($ownerId);
+
+        return $owner && $user->can('view', $owner);
+    }
+);

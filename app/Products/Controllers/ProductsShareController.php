@@ -8,6 +8,7 @@ use App\Http\Resources\ProductResource;
 use App\Http\Resources\UserResource;
 use App\Models\Access;
 use App\Models\User;
+use App\Products\Product;
 use App\Products\Requests\StoreProductsShareRequest;
 use App\Shopping\Resources\ShoppingDayResource;
 use Illuminate\Http\JsonResponse;
@@ -54,7 +55,12 @@ class ProductsShareController extends Controller
             abort(404);
         }
 
-        $products = $accessible->products()->orderBy('name')->get();
+        $products = $accessible->products()->with(['shoppingDayItems.shoppingDay'])
+            ->orderBy('search_index')->get();
+
+        $products->each(function (Product $product) {
+            $product->lastPrice = $product->getLastPrice();
+        });
 
         $lastAccessibleFiveShoppingDays = $accessible?->shoppingDays()
             ->limit(5)->get();
