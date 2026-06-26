@@ -33,6 +33,11 @@ export interface NavGroupItem {
 
 export type NavItem = NavLinkItem | NavGroupItem
 
+export interface DeletedProductFlash {
+    id: string
+    name: string
+}
+
 export interface SharedData extends PageProps {
     name: string
     auth: Auth
@@ -40,6 +45,9 @@ export interface SharedData extends PageProps {
     ziggy: Config & { location: string }
 
     sidebarShoppingDays?: ShoppingDay[]
+    flash?: {
+        deletedProduct?: DeletedProductFlash | null
+    }
 }
 
 export interface User {

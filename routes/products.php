@@ -7,7 +7,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class)
-        ->only(['store', 'update', 'destroy']);
+        ->only(['show', 'store', 'update', 'destroy']);
+
+    Route::post('products/{product}/restore', [ProductController::class, 'restore'])
+        ->name('products.restore')
+        ->withTrashed();
 
     Route::resource('products-share', ProductsShareController::class)
         ->only(['create', 'show', 'store', 'update', 'destroy'])
@@ -16,4 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('users.products', UserProductsController::class)
         ->only(['index', 'store'])
         ->parameters(['users' => 'owner']);
+
+    Route::get('users/{owner}/products/sort', [UserProductsController::class, 'sort'])
+        ->name('users.products.sort');
 });

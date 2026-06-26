@@ -14,12 +14,40 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Inertia\Inertia;
+use Inertia\Response;
+use App\Http\Resources\ProductResource;
 
 class ProductController extends Controller
 {
     public function __construct()
     {
         $this->authorizeResource(Product::class);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Product $product): Response
+    {
+        $product->load('shoppingDayItems.shoppingDay');
+        $product->lastPrice = $product->getLastPrice();
+
+        return Inertia::render('products/ProductShow', [
+            'product'   => ProductResource::make($product),
+            'purchases' => $product->getPurchaseHistory(),
+            'stats'     => [
+                'timesBought'       => $product->getTimesBought(),
+                'averagePrice'      => $product->getAverageUnitPrice(),
+                'minPrice'          => $product->getMinUnitPrice(),
+                'maxPrice'          => $product->getMaxUnitPrice(),
+                'averageQuantity'   => $product->getAverageQuantity(),
+                'avgDaysBetween'    => $product->getAverageDaysBetweenPurchases(),
+                'daysPerUnit'       => $product->getDaysPerUnit(),
+                'estimatedDuration' => $product->getEstimatedDuration(),
+                'totalSpent'        => $product->getTotalSpent(),
+            ],
+        ]);
     }
 
     /**
@@ -53,13 +81,12 @@ class ProductController extends Controller
         }
 
         if (Arr::has($attrs, 'name')) {
-            $product = $targetUser->products()->create($attrs);
+            $product = $this->createOrRestore($targetUser, $attrs['name']);
             ProductCreated::dispatch($product);
         } else if (Arr::has($attrs, 'products')) {
-            $products = $targetUser->products()->createMany(
-                array_map(fn($item) => ['name' => $item], $attrs['products'])
-            );
-            $products->each(fn ($product) => ProductCreated::dispatch($product));
+            $products = collect($attrs['products'])
+                ->map(fn(string $name) => $this->createOrRestore($targetUser, $name));
+            $products->each(fn (Product $product) => ProductCreated::dispatch($product));
         }
 
         return $request->wantsJson()
@@ -88,13 +115,56 @@ class ProductController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (soft delete).
      */
     public function destroy(
         Request $request,
         Product $product
     ): JsonResponse|RedirectResponse {
+        $ownerId = $product->owner_id;
+        $productId = $product->id;
+        $productName = $product->name;
+
         $product->delete();
+
+        return $request->wantsJson()
+            ? response()->json(204, null)
+            : redirect()
+                ->route('users.products.index', ['owner' => $ownerId])
+                ->with('deletedProduct', ['id' => $productId, 'name' => $productName]);
+    }
+
+    /**
+     * Find a trashed product by case-insensitive name for the given owner and restore it;
+     * otherwise create a fresh product. Prevents duplicate ghosts when a user re-adds a
+     * product they had previously deleted.
+     */
+    private function createOrRestore(User $owner, string $name): Product
+    {
+        $trashed = $owner->products()->onlyTrashed()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->first();
+
+        if ($trashed) {
+            $trashed->restore();
+            return $trashed;
+        }
+
+        return $owner->products()->create(['name' => $name]);
+    }
+
+    /**
+     * Restore a soft-deleted product (undo delete).
+     */
+    public function restore(
+        Request $request,
+        string $product
+    ): JsonResponse|RedirectResponse {
+        $model = Product::withTrashed()->findOrFail($product);
+
+        $this->authorize('delete', $model);
+
+        $model->restore();
 
         return $request->wantsJson()
             ? response()->json(204, null)

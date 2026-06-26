@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $products = $request->user()->products()->with([
             'shoppingDayItems.shoppingDay'
-        ])->orderBy('search_index')->get();
+        ])->orderBy('name')->get();
 
         $products->each(function (Product $product) {
             $product->lastPrice = $product->getLastPrice();

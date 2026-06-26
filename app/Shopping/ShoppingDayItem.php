@@ -49,7 +49,7 @@ class ShoppingDayItem extends Model
      */
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 
     protected static function newFactory(): ShoppingDayItemFactory

@@ -48,7 +48,10 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarShoppingDays' => $lastFiveShoppingDays
                 ? fn() => ShoppingDayResource::collection($lastFiveShoppingDays)
-                : null
+                : null,
+            'flash' => [
+                'deletedProduct' => $request->session()->get('deletedProduct'),
+            ],
         ];
     }
 }
