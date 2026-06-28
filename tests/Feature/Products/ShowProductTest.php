@@ -120,6 +120,55 @@ test('product show stats are null when product has never been bought', function 
         );
 });
 
+test('unpriced items in a shopping day are not counted as purchases', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create([
+        'owner_id' => $user->id,
+        'required_quantity' => 2,
+    ]);
+
+    $day1 = ShoppingDay::factory()->create(['owner_id' => $user->id, 'date' => '2026-01-01']);
+    $day2 = ShoppingDay::factory()->create(['owner_id' => $user->id, 'date' => '2026-01-21']);
+    $day3 = ShoppingDay::factory()->create(['owner_id' => $user->id, 'date' => '2026-02-10']);
+
+    ShoppingDayItem::factory()->create([
+        'shopping_day_id' => $day1->id,
+        'product_id' => $product->id,
+        'unit_price' => 10.50,
+        'quantity' => 4,
+    ]);
+    ShoppingDayItem::factory()->create([
+        'shopping_day_id' => $day2->id,
+        'product_id' => $product->id,
+        'unit_price' => 12.50,
+        'quantity' => 2,
+    ]);
+    // Listed on day3 but not bought — no price
+    ShoppingDayItem::factory()->create([
+        'shopping_day_id' => $day3->id,
+        'product_id' => $product->id,
+        'unit_price' => null,
+        'quantity' => 3,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('products.show', $product))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('products/ProductShow')
+            // Only the 2 priced items count as purchases
+            ->where('stats.timesBought', 2)
+            // Average only over the 2 priced items (qty 4 + 2 = avg 3)
+            ->where('stats.averageQuantity', 3)
+            // Gap is only between day1 and day2 (20 days); day3 (unpriced) excluded
+            ->where('stats.avgDaysBetween', 20)
+            // purchases list contains only the priced items
+            ->where('purchases.0.date', '2026-01-01')
+            ->where('purchases.1.date', '2026-01-21')
+            ->count('purchases', 2)
+        );
+});
+
 test('approved partner can view product show page', function () {
     [$owner, $partner] = User::factory(2)->create();
     $access = new Access(['user_email' => $partner->email]);

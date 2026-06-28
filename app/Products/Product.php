@@ -79,6 +79,19 @@ class Product extends Model
     }
 
     /**
+     * Items that were actually purchased: attached to a shopping day and have a price.
+     *
+     * @return \Illuminate\Support\Collection<int, ShoppingDayItem>
+     */
+    private function purchasedItems(): \Illuminate\Support\Collection
+    {
+        return $this->shoppingDayItems->filter(
+            fn(ShoppingDayItem $item) => $item->shoppingDay !== null
+                && $item->unit_price !== null
+        );
+    }
+
+    /**
      * Returns purchase history sorted oldest-first, each entry carrying
      * the shopping day id, date string, quantity, and unit price.
      *
@@ -86,8 +99,7 @@ class Product extends Model
      */
     public function getPurchaseHistory(): array
     {
-        return $this->shoppingDayItems
-            ->filter(fn(ShoppingDayItem $item) => $item->shoppingDay !== null)
+        return $this->purchasedItems()
             ->sortBy(fn(ShoppingDayItem $item) => $item->shoppingDay->date)
             ->values()
             ->map(fn(ShoppingDayItem $item) => [
@@ -101,9 +113,7 @@ class Product extends Model
 
     public function getTimesBought(): int
     {
-        return $this->shoppingDayItems
-            ->filter(fn(ShoppingDayItem $item) => $item->shoppingDay !== null)
-            ->count();
+        return $this->purchasedItems()->count();
     }
 
     public function getAverageUnitPrice(): float | null
@@ -135,7 +145,7 @@ class Product extends Model
 
     public function getAverageQuantity(): float | null
     {
-        $quantities = $this->shoppingDayItems
+        $quantities = $this->purchasedItems()
             ->filter(fn(ShoppingDayItem $item) => $item->quantity !== null)
             ->pluck('quantity');
 
@@ -148,8 +158,7 @@ class Product extends Model
      */
     public function getAverageDaysBetweenPurchases(): float | null
     {
-        $dates = $this->shoppingDayItems
-            ->filter(fn(ShoppingDayItem $item) => $item->shoppingDay !== null)
+        $dates = $this->purchasedItems()
             ->sortBy(fn(ShoppingDayItem $item) => $item->shoppingDay->date)
             ->map(fn(ShoppingDayItem $item) => $item->shoppingDay->date)
             ->values();
