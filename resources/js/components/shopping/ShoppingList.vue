@@ -10,6 +10,7 @@ import { ShoppingDay } from "@/types/ShoppingDay"
 
 const model = defineModel<(ShoppingDayItem & { checked: boolean })[]>()
 const total = defineModel<number>("total")
+const calculatedTotal = defineModel<number>("calculatedTotal")
 
 const props = withDefaults(
     defineProps<{
@@ -27,14 +28,25 @@ const computedItems = computed(
 )
 
 watchEffect(() => {
-    total.value =
-        model.value?.reduce((total, item) => {
-            if (Number.isNaN(item.unitPrice) || Number.isNaN(item.quantity)) {
-                return total
-            }
+    let currentTotal = 0
+    let prevTotal = 0
 
-            return total + item.unitPrice * item.quantity
-        }, 0) ?? 0
+    for (const item of model.value ?? []) {
+        if (Number.isNaN(item.unitPrice) || Number.isNaN(item.quantity)) {
+            continue
+        }
+
+        const hasPrice = Boolean(item.unitPrice)
+
+        currentTotal += item.unitPrice * item.quantity
+
+        if (hasPrice) {
+            prevTotal += (item.product.lastPrice ?? 0) * item.quantity
+        }
+    }
+
+    total.value = currentTotal
+    calculatedTotal.value = prevTotal
 })
 
 const updateForm = useForm({})
