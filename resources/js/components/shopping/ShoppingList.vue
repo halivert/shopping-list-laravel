@@ -41,7 +41,7 @@ watchEffect(() => {
         currentTotal += item.unitPrice * item.quantity
 
         if (hasPrice) {
-            prevTotal += (item.product.lastPrice ?? 0) * item.quantity
+            prevTotal += (item.product.lastPrice ?? item.unitPrice) * item.quantity
         }
     }
 
