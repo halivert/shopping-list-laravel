@@ -32,9 +32,9 @@ class NewProductToShoppingDayController extends Controller
                     ->orderByDesc('index')
                     ->first();
 
-                $product = Product::query()->firstOrCreate(
-                    ['name' => $attrs['name']],
-                    ['owner_id' => $shoppingDay->owner_id]
+                $product = Product::findOrRestoreOrCreate(
+                    $shoppingDay->owner,
+                    $attrs['name']
                 );
 
                 return $shoppingDay->items()->firstOrCreate(

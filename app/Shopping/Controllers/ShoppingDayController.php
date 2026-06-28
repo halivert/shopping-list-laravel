@@ -100,7 +100,7 @@ class ShoppingDayController extends Controller
             'items.product.shoppingDayItems.shoppingDay'
         ]);
 
-        $products = fn() => $shoppingDay->owner->products()->with([
+        $products = fn() => $shoppingDay->owner->products()->withTrashed()->with([
             'shoppingDayItems.shoppingDay'
         ])->orderBy('search_index')->get();
 

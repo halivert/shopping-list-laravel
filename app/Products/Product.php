@@ -79,6 +79,28 @@ class Product extends Model
     }
 
     /**
+     * Find an active or trashed product by owner + case-insensitive name and return it
+     * (restoring if trashed). Creates a fresh product when no match exists.
+     * Single source of truth — prevents duplicate "ghost" products when re-adding a
+     * previously deleted product.
+     */
+    public static function findOrRestoreOrCreate(User $owner, string $name): self
+    {
+        $existing = $owner->products()->withTrashed()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->first();
+
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+            return $existing;
+        }
+
+        return $owner->products()->create(['name' => $name]);
+    }
+
+    /**
      * Items that were actually purchased: attached to a shopping day and have a price.
      *
      * @return \Illuminate\Support\Collection<int, ShoppingDayItem>
