@@ -29,7 +29,13 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 ])
 
 const total = ref(0)
+const calculatedTotal = ref(0)
 const hideChecked = ref(false)
+
+const totalDiff = computed(() => total.value - calculatedTotal.value)
+const totalDiffPercent = computed(() =>
+    calculatedTotal.value ? (totalDiff.value / calculatedTotal.value) * 100 : 0
+)
 
 const items = ref(
     props.shoppingDay.items?.map((item) => ({
@@ -97,8 +103,19 @@ const { form: productForm, handleSubmit: handleNewProduct } =
             <header
                 class="text-xl sticky top-0 pt-2 pb-1 bg-background flex justify-between z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
             >
-                <span>
-                    Total: <span class="">{{ formatCurrency(total) }}</span>
+                <span class="flex flex-col">
+                    <span>Total: <span>{{ formatCurrency(total) }}</span></span>
+                    <span
+                        v-if="calculatedTotal > 0 && totalDiff !== 0"
+                        :class="[
+                            'text-sm font-medium',
+                            totalDiff > 0 ? 'text-red-500' : 'text-green-500',
+                        ]"
+                    >
+                        {{ totalDiff > 0 ? "+" : "" }}{{ formatCurrency(totalDiff) }}
+                        ({{ totalDiff > 0 ? "+" : "" }}{{ totalDiffPercent.toFixed(1) }}%)
+                        <span class="text-xs font-normal opacity-70">vs. anterior</span>
+                    </span>
                 </span>
                 <label class="text-xs inline-flex items-center gap-1">
                     Ocultar comprados
@@ -108,6 +125,7 @@ const { form: productForm, handleSubmit: handleNewProduct } =
             <ShoppingList
                 v-model="items"
                 v-model:total="total"
+                v-model:calculatedTotal="calculatedTotal"
                 :shoppingDay="shoppingDay"
                 :hideChecked="hideChecked"
             />
