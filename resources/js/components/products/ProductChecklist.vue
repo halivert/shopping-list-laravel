@@ -64,7 +64,7 @@ const debouncedPatchRequired = useDebounceFn(
 )
 
 function handleRequiredChange(product: Product, checked: boolean) {
-    console.info(checked)
+    product.isRequired = checked
     debouncedPatchRequired(product, checked)
 }
 
