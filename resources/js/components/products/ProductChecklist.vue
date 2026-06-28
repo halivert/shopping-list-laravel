@@ -6,6 +6,7 @@ import type { Product } from "@/types/Product"
 import type { User } from "@/types"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
+import AppCheckbox from "@/components/ui/checkbox/Checkbox.vue"
 
 const props = defineProps<{
     products: Product[]
@@ -45,8 +46,11 @@ function handleNewProduct() {
 
 // ── Checklist state ───────────────────────────────────────────────────────────
 
-function patchProduct(product: Product, attrs: Record<string, unknown>) {
-    router.put(route("products.update", product.id), attrs, {
+function patchProduct<T extends { is_required: boolean }>(
+    product: Product,
+    attrs: T
+) {
+    router.put<T>(route("products.update", product.id), attrs, {
         preserveScroll: true,
         preserveState: true,
     })
@@ -59,8 +63,8 @@ const debouncedPatchRequired = useDebounceFn(
     500
 )
 
-function handleRequiredChange(product: Product, event: Event) {
-    const checked = (event.target as HTMLInputElement).checked
+function handleRequiredChange(product: Product, checked: boolean) {
+    console.info(checked)
     debouncedPatchRequired(product, checked)
 }
 
@@ -86,13 +90,14 @@ function incrementQuantity(product: Product) {
                 class="flex items-center gap-3 py-1"
             >
                 <!-- Required checkbox -->
-                <input
-                    type="checkbox"
+                <AppCheckbox
                     :id="`req-${product.id}`"
                     :checked="product.isRequired"
                     class="accent-primary size-4 shrink-0 cursor-pointer"
-                    @change="handleRequiredChange(product, $event)"
-                />
+                    @update:checked="
+                        (value) => handleRequiredChange(product, value)
+                    "
+                ></AppCheckbox>
 
                 <!-- Product name — tapping toggles the checkbox via <label for> -->
                 <label
