@@ -81,11 +81,11 @@ class ProductController extends Controller
         }
 
         if (Arr::has($attrs, 'name')) {
-            $product = $this->createOrRestore($targetUser, $attrs['name']);
+            $product = Product::findOrRestoreOrCreate($targetUser, $attrs['name']);
             ProductCreated::dispatch($product);
         } else if (Arr::has($attrs, 'products')) {
             $products = collect($attrs['products'])
-                ->map(fn(string $name) => $this->createOrRestore($targetUser, $name));
+                ->map(fn(string $name) => Product::findOrRestoreOrCreate($targetUser, $name));
             $products->each(fn (Product $product) => ProductCreated::dispatch($product));
         }
 
@@ -132,25 +132,6 @@ class ProductController extends Controller
             : redirect()
                 ->route('users.products.index', ['owner' => $ownerId])
                 ->with('deletedProduct', ['id' => $productId, 'name' => $productName]);
-    }
-
-    /**
-     * Find a trashed product by case-insensitive name for the given owner and restore it;
-     * otherwise create a fresh product. Prevents duplicate ghosts when a user re-adds a
-     * product they had previously deleted.
-     */
-    private function createOrRestore(User $owner, string $name): Product
-    {
-        $trashed = $owner->products()->onlyTrashed()
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
-            ->first();
-
-        if ($trashed) {
-            $trashed->restore();
-            return $trashed;
-        }
-
-        return $owner->products()->create(['name' => $name]);
     }
 
     /**
