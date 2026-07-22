@@ -3,6 +3,7 @@ import { computed, ref } from "vue"
 import { useDebounceFn } from "@vueuse/core"
 
 import AppInput from "../ui/input/Input.vue"
+import UnitPriceCalculator from "./UnitPriceCalculator.vue"
 import { formatCurrency } from "@/composables/formatHelpers"
 
 const unitPrice = defineModel<number>("unitPrice", { default: 0 })
@@ -64,6 +65,18 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
 const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
     checked.value = Boolean(unitPrice.value)
 }, 1000)
+
+function handleApplyCalculated({
+    unitPrice: calculatedPrice,
+    quantity: calculatedQuantity,
+}: {
+    unitPrice: number
+    quantity: number
+}) {
+    unitPrice.value = calculatedPrice
+    quantity.value = calculatedQuantity
+    handleMaybeChecked()
+}
 </script>
 
 <template>
@@ -170,6 +183,8 @@ const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
                     >{{ formatCurrency(total) }}</span
                 >
             </div>
+
+            <UnitPriceCalculator :unit="unit" @apply="handleApplyCalculated" />
         </div>
     </div>
 </template>
