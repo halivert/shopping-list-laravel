@@ -8,7 +8,8 @@ import type { Product } from "@/types/Product"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
-import { formatCurrency } from "@/composables/formatHelpers"
+import SuggestionsDatalist from "@/components/products/SuggestionsDatalist.vue"
+import { formatCurrency, normalizeForSearch } from "@/composables/formatHelpers"
 
 interface Props {
     owner: User
@@ -28,19 +29,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 const query = ref("")
 
 const filteredProducts = computed(() => {
-    const q = query.value
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .toLowerCase()
-        .trim()
+    const q = normalizeForSearch(query.value)
     if (!q) return props.products
-    return props.products.filter((p) =>
-        p.name
-            .normalize("NFD")
-            .replace(/\p{Diacritic}/gu, "")
-            .toLowerCase()
-            .includes(q)
-    )
+    return props.products.filter((p) => normalizeForSearch(p.name).includes(q))
 })
 
 // ── Add product ───────────────────────────────────────────────────────────────
@@ -144,14 +135,10 @@ function handleAdd() {
                         autocomplete="off"
                         required
                     />
-                    <datalist id="deleted-products-index">
-                        <option
-                            v-for="name in deletedProductNames"
-                            :key="name"
-                        >
-                            {{ name }}
-                        </option>
-                    </datalist>
+                    <SuggestionsDatalist
+                        id="deleted-products-index"
+                        :names="deletedProductNames"
+                    />
                     <AppButton
                         class="rounded-s-none aspect-square h-[unset] w-auto p-0"
                         :disabled="addForm.processing"

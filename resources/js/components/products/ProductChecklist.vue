@@ -7,6 +7,7 @@ import type { User } from "@/types"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import AppCheckbox from "@/components/ui/checkbox/Checkbox.vue"
+import SuggestionsDatalist from "@/components/products/SuggestionsDatalist.vue"
 
 const props = withDefaults(
     defineProps<{
@@ -183,14 +184,10 @@ function incrementQuantity(product: Product) {
                         required
                     />
 
-                    <datalist id="deleted-products-home">
-                        <option
-                            v-for="name in deletedProductNames"
-                            :key="name"
-                        >
-                            {{ name }}
-                        </option>
-                    </datalist>
+                    <SuggestionsDatalist
+                        id="deleted-products-home"
+                        :names="deletedProductNames"
+                    />
 
                     <AppButton
                         class="rounded-s-none aspect-square h-[unset] w-auto p-0"

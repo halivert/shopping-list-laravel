@@ -9,6 +9,7 @@ import AppLayout from "@/layouts/AppLayout.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import PriceChart from "@/components/products/PriceChart.vue"
+import SuggestionsDatalist from "@/components/products/SuggestionsDatalist.vue"
 import { formatCurrency, formatDate } from "@/composables/formatHelpers"
 
 const props = defineProps<{
@@ -114,11 +115,10 @@ const chartPoints = computed(() =>
                             list="unit-suggestions"
                             autocomplete="off"
                         />
-                        <datalist id="unit-suggestions">
-                            <option v-for="u in unitSuggestions" :key="u">
-                                {{ u }}
-                            </option>
-                        </datalist>
+                        <SuggestionsDatalist
+                            id="unit-suggestions"
+                            :names="unitSuggestions"
+                        />
                         <AppButton type="submit" :disabled="renameForm.processing">
                             Guardar
                         </AppButton>

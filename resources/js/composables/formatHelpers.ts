@@ -21,3 +21,15 @@ export function formatDate(
         dateStyle: style,
     }).format(date)
 }
+
+/**
+ * Lowercases and strips diacritics so searches match regardless of accents,
+ * e.g. "cafe" matches "café".
+ */
+export function normalizeForSearch(str: string): string {
+    return str
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase()
+        .trim()
+}

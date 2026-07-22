@@ -8,6 +8,7 @@ import type { Product } from "@/types/Product"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
+import { normalizeForSearch } from "@/composables/formatHelpers"
 
 interface Props {
     owner: User
@@ -27,19 +28,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 const query = ref("")
 
 const filteredProducts = computed(() => {
-    const q = query.value
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .toLowerCase()
-        .trim()
+    const q = normalizeForSearch(query.value)
     if (!q) return props.products
-    return props.products.filter((p) =>
-        p.name
-            .normalize("NFD")
-            .replace(/\p{Diacritic}/gu, "")
-            .toLowerCase()
-            .includes(q)
-    )
+    return props.products.filter((p) => normalizeForSearch(p.name).includes(q))
 })
 
 // ── Restore ───────────────────────────────────────────────────────────────────

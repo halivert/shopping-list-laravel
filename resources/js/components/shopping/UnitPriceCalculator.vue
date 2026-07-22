@@ -58,6 +58,11 @@ function onOpenChange(next: boolean) {
 
 // ── Result ────────────────────────────────────────────────────────────────────
 
+// Matches the unit_price/quantity columns' decimal(9,4) precision.
+function round4(n: number): number {
+    return Math.round(n * 10000) / 10000
+}
+
 const result = computed(() => {
     if (!pricePaid.value || !packageSize.value) return null
 
@@ -72,8 +77,8 @@ const result = computed(() => {
     if (!Number.isFinite(unitPrice)) return null
 
     return {
-        unitPrice: Math.round(unitPrice * 10000) / 10000,
-        quantity: Math.round(quantity * 10000) / 10000,
+        unitPrice: round4(unitPrice),
+        quantity: round4(quantity),
     }
 })
 
