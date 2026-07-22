@@ -18,9 +18,18 @@ class Product extends Model
     /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory, HasUuids, SoftDeletes;
 
+    /**
+     * Canonical units a product's price can be expressed per. Kept in sync
+     * with the frontend's PRODUCT_UNITS (resources/js/types/Product.ts) and
+     * UnitPriceCalculator.vue's conversion table — every unit here always has
+     * a metric conversion pair (ml<->L, g<->kg).
+     */
+    public const UNITS = ['L', 'ml', 'kg', 'g'];
+
     protected $fillable = [
         'owner_id',
         'name',
+        'unit',
         'search_index',
         'shopping_index',
         'is_required',

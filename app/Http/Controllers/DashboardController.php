@@ -22,6 +22,8 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'products' => fn() => ProductResource::collection($products),
+            'deletedProductNames' => fn() => $request->user()->products()->onlyTrashed()
+                ->orderBy('name')->pluck('name'),
         ]);
     }
 }

@@ -16,6 +16,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 defineProps<{
     products: Product[]
+    deletedProductNames: string[]
 }>()
 </script>
 
@@ -23,7 +24,10 @@ defineProps<{
     <Head title="Inicio" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <ProductChecklistView :products="products">
+        <ProductChecklistView
+            :products="products"
+            :deleted-product-names="deletedProductNames"
+        >
             <template #footer>
                 <div class="px-3 py-2 flex justify-end">
                     <AppButton

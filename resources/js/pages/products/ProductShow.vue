@@ -3,11 +3,12 @@ import { computed, ref } from "vue"
 import { Head, Link, router, useForm } from "@inertiajs/vue3"
 
 import type { BreadcrumbItem } from "@/types"
-import type { Product } from "@/types/Product"
+import { PRODUCT_UNITS, type Product } from "@/types/Product"
 import type { ProductPurchase, ProductStats } from "@/types/ProductShow"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import AppInput from "@/components/ui/input/Input.vue"
+import AppLabel from "@/components/ui/label/Label.vue"
 import PriceChart from "@/components/products/PriceChart.vue"
 import { formatCurrency, formatDate } from "@/composables/formatHelpers"
 
@@ -30,26 +31,39 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 
 const isEditing = ref(false)
 
-const renameForm = useForm({ name: props.product.name })
+const renameForm = useForm({
+    name: props.product.name,
+    unit: props.product.unit ?? "",
+})
 
 function startEdit() {
     renameForm.name = props.product.name
+    renameForm.unit = props.product.unit ?? ""
     isEditing.value = true
 }
 
 function submitRename() {
-    renameForm.put(route("products.update", props.product.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            isEditing.value = false
-        },
-    })
+    renameForm
+        .transform((data) => ({ ...data, unit: data.unit || null }))
+        .put(route("products.update", props.product.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                isEditing.value = false
+            },
+        })
 }
 
 function cancelEdit() {
     renameForm.reset()
     isEditing.value = false
 }
+
+// ── Unit label ────────────────────────────────────────────────────────────────
+
+const unitLabel = computed(() => props.product.unit ?? "")
+const unitSuffix = computed(() =>
+    props.product.unit ? ` / ${props.product.unit}` : ""
+)
 
 // ── Delete ────────────────────────────────────────────────────────────────────
 
@@ -80,41 +94,80 @@ const chartPoints = computed(() =>
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex w-full flex-col gap-6 px-4 py-4 max-w-lg mx-auto">
             <!-- Header + rename -->
-            <div class="flex min-h-10 items-center gap-2">
-                <template v-if="isEditing">
-                    <form
-                        class="flex flex-1 items-center gap-2"
-                        @submit.prevent="submitRename"
-                    >
+            <div v-if="isEditing">
+                <form class="space-y-3" @submit.prevent="submitRename">
+                    <div class="space-y-1">
+                        <AppLabel for="product-name">Nombre</AppLabel>
                         <AppInput
+                            id="product-name"
                             v-model="renameForm.name"
-                            class="h-9 flex-1"
+                            class="h-10 w-full"
                             autofocus
                             required
                         />
-                        <AppButton type="submit" :disabled="renameForm.processing">
+                    </div>
+
+                    <div class="space-y-1">
+                        <AppLabel>Unidad</AppLabel>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                class="h-10 px-3 rounded-md border text-sm"
+                                :class="
+                                    !renameForm.unit
+                                        ? 'bg-primary text-background'
+                                        : 'bg-background'
+                                "
+                                @click="renameForm.unit = ''"
+                            >
+                                Sin unidad
+                            </button>
+                            <button
+                                v-for="u in PRODUCT_UNITS"
+                                :key="u"
+                                type="button"
+                                class="h-10 px-3 rounded-md border text-sm"
+                                :class="
+                                    renameForm.unit === u
+                                        ? 'bg-primary text-background'
+                                        : 'bg-background'
+                                "
+                                @click="renameForm.unit = u"
+                            >
+                                {{ u }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <AppButton
+                            type="submit"
+                            class="flex-1"
+                            :disabled="renameForm.processing"
+                        >
                             Guardar
                         </AppButton>
                         <AppButton
                             type="button"
                             variant="ghost"
+                            class="flex-1"
                             @click="cancelEdit"
                         >
                             Cancelar
                         </AppButton>
-                    </form>
-                </template>
-                <template v-else>
-                    <h1 class="text-xl font-semibold flex-1 truncate px-3">{{ product.name }}</h1>
-                    <AppButton
-                        variant="ghost"
-                        size="sm"
-                        @click="startEdit"
-                        title="Renombrar producto"
-                    >
-                        ✏️
-                    </AppButton>
-                </template>
+                    </div>
+                </form>
+            </div>
+            <div v-else class="flex min-h-10 items-center gap-2">
+                <h1 class="text-xl font-semibold flex-1 truncate px-3">{{ product.name }}</h1>
+                <AppButton
+                    variant="ghost"
+                    size="sm"
+                    @click="startEdit"
+                    title="Renombrar producto"
+                >
+                    ✏️
+                </AppButton>
             </div>
 
             <!-- Stat cards -->
@@ -127,7 +180,7 @@ const chartPoints = computed(() =>
                 <div v-if="stats.averagePrice !== null" class="rounded-lg border p-3">
                     <p class="text-xs text-muted-foreground">Precio promedio</p>
                     <p class="text-2xl font-semibold">
-                        {{ formatCurrency(stats.averagePrice) }}
+                        {{ formatCurrency(stats.averagePrice) }}{{ unitSuffix }}
                     </p>
                 </div>
 
@@ -138,7 +191,7 @@ const chartPoints = computed(() =>
                     <p class="text-xs text-muted-foreground">Rango de precio</p>
                     <p class="font-semibold">
                         {{ formatCurrency(stats.minPrice) }} –
-                        {{ formatCurrency(stats.maxPrice) }}
+                        {{ formatCurrency(stats.maxPrice) }}{{ unitSuffix }}
                     </p>
                 </div>
 
@@ -177,9 +230,11 @@ const chartPoints = computed(() =>
             <!-- Price graph -->
             <div v-if="chartPoints.length > 0">
                 <h2 class="text-sm font-medium mb-2 text-muted-foreground">
-                    Historial de precio
+                    Historial de precio<template v-if="unitLabel">
+                        (por {{ unitLabel }})</template
+                    >
                 </h2>
-                <PriceChart :points="chartPoints" />
+                <PriceChart :points="chartPoints" :unit="product.unit" />
             </div>
             <p v-else class="text-sm text-muted-foreground">
                 Aún no hay precios registrados para este producto.
@@ -208,10 +263,15 @@ const chartPoints = computed(() =>
                         </Link>
                         <span class="text-muted-foreground">
                             <template v-if="purchase.quantity !== null">
-                                {{ purchase.quantity }}×
+                                <template v-if="unitLabel">
+                                    {{ purchase.quantity }} {{ unitLabel }} ·
+                                </template>
+                                <template v-else>
+                                    {{ purchase.quantity }}×
+                                </template>
                             </template>
                             <template v-if="purchase.unitPrice !== null">
-                                {{ formatCurrency(purchase.unitPrice) }}
+                                {{ formatCurrency(purchase.unitPrice) }}{{ unitSuffix }}
                             </template>
                         </span>
                     </li>

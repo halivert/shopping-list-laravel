@@ -2,9 +2,11 @@
 
 namespace App\Products\Requests;
 
+use App\Products\Product;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -25,6 +27,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|required|string|max:100',
+            'unit' => ['sometimes', 'nullable', Rule::in(Product::UNITS)],
             'is_required' => 'sometimes|boolean',
             'required_quantity' => 'sometimes|integer|min:1',
         ];

@@ -104,7 +104,7 @@ class ProductController extends Controller
         $attrs = $request->validated();
 
         $product->update(
-            collect($attrs)->only(['name', 'is_required', 'required_quantity'])->all()
+            collect($attrs)->only(['name', 'unit', 'is_required', 'required_quantity'])->all()
         );
 
         ProductUpdated::dispatch($product);

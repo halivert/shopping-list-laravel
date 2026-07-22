@@ -3,6 +3,7 @@ import { computed, ref } from "vue"
 import { useDebounceFn } from "@vueuse/core"
 
 import AppInput from "../ui/input/Input.vue"
+import UnitPriceCalculator from "./UnitPriceCalculator.vue"
 import { formatCurrency } from "@/composables/formatHelpers"
 
 const unitPrice = defineModel<number>("unitPrice", { default: 0 })
@@ -11,6 +12,7 @@ const checked = defineModel<boolean>("checked")
 
 const props = defineProps<{
     lastPrice?: number
+    unit?: string | null
 }>()
 
 const updateQuantity = (newQuantity: number) => {
@@ -63,6 +65,18 @@ function handleUpdateQuantity(quantityInput: HTMLInputElement) {
 const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
     checked.value = Boolean(unitPrice.value)
 }, 1000)
+
+function handleApplyCalculated({
+    unitPrice: calculatedPrice,
+    quantity: calculatedQuantity,
+}: {
+    unitPrice: number
+    quantity: number
+}) {
+    unitPrice.value = calculatedPrice
+    quantity.value = calculatedQuantity
+    handleMaybeChecked()
+}
 </script>
 
 <template>
@@ -105,7 +119,11 @@ const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
                     class="px-3"
                     @contextmenu.prevent="context(() => (editCount = true))"
                 >
-                    {{ quantity }}
+                    {{ quantity }}<span
+                        v-if="unit"
+                        class="text-xs text-muted-foreground"
+                        >{{ " " + unit }}</span
+                    >
                 </span>
                 <button
                     class="h-6 w-6 rounded bg-primary text-background p-0.5"
@@ -154,11 +172,19 @@ const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
                 />
 
                 <span
+                    v-if="unit"
+                    class="absolute top-1/2 -translate-y-1/2 right-2 text-xs text-muted-foreground pointer-events-none"
+                    >/{{ unit }}</span
+                >
+
+                <span
                     v-if="total && quantity !== 1"
                     class="absolute top-1/2 -translate-y-1/2 right-10 bg-secondary px-1 rounded"
                     >{{ formatCurrency(total) }}</span
                 >
             </div>
+
+            <UnitPriceCalculator :unit="unit" @apply="handleApplyCalculated" />
         </div>
     </div>
 </template>

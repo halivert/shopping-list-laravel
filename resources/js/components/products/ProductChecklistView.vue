@@ -10,10 +10,16 @@ import AppButton from "@/components/ui/button/Button.vue"
 import ProductChecklist from "@/components/products/ProductChecklist.vue"
 import { formatCurrency } from "@/composables/formatHelpers"
 
-const props = defineProps<{
-    products: Product[]
-    owner?: User
-}>()
+const props = withDefaults(
+    defineProps<{
+        products: Product[]
+        owner?: User
+        deletedProductNames?: string[]
+    }>(),
+    {
+        deletedProductNames: () => [],
+    }
+)
 
 const page = usePage()
 const auth = computed(() => page.props.auth as { user: User })
@@ -168,6 +174,7 @@ onUnmounted(() => {
             <ProductChecklist
                 :products="items"
                 :user="owner"
+                :deleted-product-names="deletedProductNames"
                 @change-quantity="onChangeQuantity"
             />
         </section>

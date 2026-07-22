@@ -9,6 +9,7 @@ interface Point {
 
 const props = defineProps<{
     points: Point[]
+    unit?: string | null
 }>()
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -22,8 +23,10 @@ const INNER_H = H - PAD_Y * 2
 
 // ── Scale helpers ─────────────────────────────────────────────────────────────
 
-const minPrice = computed(() => Math.min(...props.points.map((p) => p.price)))
 const maxPrice = computed(() => Math.max(...props.points.map((p) => p.price)))
+// The Y-axis always starts at 0, with a bit of headroom above the peak so the
+// line doesn't sit flush against the top edge.
+const chartTop = computed(() => maxPrice.value * 1.1)
 
 function scaleX(index: number): number {
     if (props.points.length === 1) return PAD_X + INNER_W / 2
@@ -31,9 +34,9 @@ function scaleX(index: number): number {
 }
 
 function scaleY(price: number): number {
-    const range = maxPrice.value - minPrice.value
-    if (range === 0) return PAD_Y + INNER_H / 2
-    return PAD_Y + ((maxPrice.value - price) / range) * INNER_H
+    const top = chartTop.value
+    if (top === 0) return PAD_Y + INNER_H
+    return PAD_Y + ((top - price) / top) * INNER_H
 }
 
 // ── SVG path ──────────────────────────────────────────────────────────────────
@@ -51,16 +54,24 @@ const areaPath = computed(() => {
 })
 
 // ── Tooltip ───────────────────────────────────────────────────────────────────
+// `activeIndex` is sticky (set by tap/click, for touch devices with no pointer);
+// `hoverIndex` is a transient desktop-only preview. Hover wins while active.
 
-const hoveredIndex = ref<number | null>(null)
+const activeIndex = ref<number | null>(null)
+const hoverIndex = ref<number | null>(null)
+const shownIndex = computed(() => hoverIndex.value ?? activeIndex.value)
+
+function toggle(i: number) {
+    activeIndex.value = activeIndex.value === i ? null : i
+}
 
 const tooltip = computed(() => {
-    if (hoveredIndex.value === null) return null
-    const p = props.points[hoveredIndex.value]
+    if (shownIndex.value === null) return null
+    const p = props.points[shownIndex.value]
     return {
-        x: scaleX(hoveredIndex.value),
+        x: scaleX(shownIndex.value),
         y: scaleY(p.price),
-        label: `${p.date}: ${formatCurrency(p.price)}`,
+        label: `${p.date}: ${formatCurrency(p.price)}${props.unit ? ` / ${props.unit}` : ""}`,
     }
 })
 
@@ -78,6 +89,16 @@ function formatShortDate(dateStr: string): string {
             role="img"
             :aria-label="`Gráfica de precio con ${points.length} registros`"
         >
+            <!-- Tap-outside-to-dismiss background -->
+            <rect
+                x="0"
+                y="0"
+                :width="W"
+                :height="H"
+                fill="transparent"
+                @click="activeIndex = null"
+            />
+
             <!-- Area fill -->
             <path
                 :d="areaPath"
@@ -97,17 +118,33 @@ function formatShortDate(dateStr: string): string {
             />
 
             <!-- Data points -->
-            <circle
-                v-for="(p, i) in points"
-                :key="i"
-                :cx="scaleX(i)"
-                :cy="scaleY(p.price)"
-                r="3"
-                fill="currentColor"
-                class="text-primary cursor-pointer"
-                @mouseenter="hoveredIndex = i"
-                @mouseleave="hoveredIndex = null"
-            />
+            <template v-for="(p, i) in points" :key="i">
+                <!-- Visible dot (decorative; grows when its price is shown) -->
+                <circle
+                    :cx="scaleX(i)"
+                    :cy="scaleY(p.price)"
+                    :r="shownIndex === i ? 4.5 : 3"
+                    fill="currentColor"
+                    class="text-primary pointer-events-none transition-[r]"
+                />
+                <!-- Larger transparent hit target: tap toggles the price on
+                     touch devices (no hover), mouse still previews on hover. -->
+                <circle
+                    :cx="scaleX(i)"
+                    :cy="scaleY(p.price)"
+                    r="12"
+                    fill="transparent"
+                    class="cursor-pointer"
+                    tabindex="0"
+                    role="button"
+                    :aria-label="`${p.date}: ${formatCurrency(p.price)}`"
+                    @click.stop="toggle(i)"
+                    @mouseenter="hoverIndex = i"
+                    @mouseleave="hoverIndex = null"
+                    @focus="hoverIndex = i"
+                    @blur="hoverIndex = null"
+                />
+            </template>
 
             <!-- Tooltip -->
             <template v-if="tooltip">

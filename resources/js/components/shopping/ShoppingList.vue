@@ -137,6 +137,7 @@ onUnmounted(() => {
                     v-model:quantity="item.quantity"
                     v-model:checked="item.checked"
                     :lastPrice="item.product.lastPrice"
+                    :unit="item.product.unit"
                     @update:unitPrice="handleUpdateUnitPrice(item.id, $event)"
                     @update:quantity="handleUpdateQuantity(item.id, $event)"
                 >
