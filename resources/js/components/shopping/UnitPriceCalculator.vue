@@ -14,6 +14,7 @@ import DialogHeader from "@/components/ui/dialog/DialogHeader.vue"
 import DialogTitle from "@/components/ui/dialog/DialogTitle.vue"
 import DialogTrigger from "@/components/ui/dialog/DialogTrigger.vue"
 import { formatCurrency } from "@/composables/formatHelpers"
+import { PRODUCT_UNITS } from "@/types/Product"
 
 const props = defineProps<{
     unit?: string | null
@@ -25,17 +26,24 @@ const emit = defineEmits<{
 
 // ── Unit conversion ──────────────────────────────────────────────────────────
 // factor[productUnit][packageUnit] = how many productUnit one packageUnit is
-// worth, e.g. UNIT_PAIRS.L.ml = 0.001 (1 ml = 0.001 L).
+// worth, e.g. UNIT_PAIRS.L.ml = 0.001 (1 ml = 0.001 L). Keyed on PRODUCT_UNITS
+// so every canonical unit is required to have an entry here — if a new unit
+// is ever added to PRODUCT_UNITS without a conversion pair, this is a type error.
+type ProductUnit = (typeof PRODUCT_UNITS)[number]
 
-const UNIT_PAIRS: Record<string, Record<string, number>> = {
+const UNIT_PAIRS: Record<ProductUnit, Partial<Record<ProductUnit, number>>> = {
     L: { L: 1, ml: 0.001 },
     ml: { ml: 1, L: 1000 },
     kg: { kg: 1, g: 0.001 },
     g: { g: 1, kg: 1000 },
 }
 
+function isProductUnit(unit: string | null | undefined): unit is ProductUnit {
+    return !!unit && (PRODUCT_UNITS as readonly string[]).includes(unit)
+}
+
 const sizeOptions = computed(() =>
-    props.unit ? Object.keys(UNIT_PAIRS[props.unit] ?? {}) : []
+    isProductUnit(props.unit) ? Object.keys(UNIT_PAIRS[props.unit]) : []
 )
 
 // ── Form state ────────────────────────────────────────────────────────────────
@@ -66,8 +74,8 @@ function round4(n: number): number {
 const result = computed(() => {
     if (!pricePaid.value || !packageSize.value) return null
 
-    const factor = props.unit
-        ? (UNIT_PAIRS[props.unit]?.[packageUnit.value] ?? 1)
+    const factor = isProductUnit(props.unit)
+        ? (UNIT_PAIRS[props.unit][packageUnit.value as ProductUnit] ?? 1)
         : 1
 
     const quantity = packageSize.value * factor
