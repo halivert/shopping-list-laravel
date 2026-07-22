@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { Head, Link, useForm } from "@inertiajs/vue3"
-import { ChevronRight, ListOrdered, Search } from "lucide-vue-next"
+import { ChevronRight, ListOrdered, Search, Trash2 } from "lucide-vue-next"
 
 import type { BreadcrumbItem, User } from "@/types"
 import type { Product } from "@/types/Product"
@@ -64,13 +64,22 @@ function handleAdd() {
                 class="flex items-center justify-between px-3 pt-3 pb-1 gap-2"
             >
                 <h1 class="text-lg font-semibold">Productos</h1>
-                <Link
-                    :href="route('users.products.sort', { owner: owner.id })"
-                    class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-                >
-                    <ListOrdered class="size-4" />
-                    Ordenar
-                </Link>
+                <div class="flex items-center gap-3">
+                    <Link
+                        :href="route('users.products.trashed', { owner: owner.id })"
+                        class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <Trash2 class="size-4" />
+                        Eliminados
+                    </Link>
+                    <Link
+                        :href="route('users.products.sort', { owner: owner.id })"
+                        class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <ListOrdered class="size-4" />
+                        Ordenar
+                    </Link>
+                </div>
             </div>
 
             <!-- Search -->

@@ -23,4 +23,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('users/{owner}/products/sort', [UserProductsController::class, 'sort'])
         ->name('users.products.sort');
+
+    Route::get('users/{owner}/products/trashed', [UserProductsController::class, 'trashed'])
+        ->name('users.products.trashed');
 });

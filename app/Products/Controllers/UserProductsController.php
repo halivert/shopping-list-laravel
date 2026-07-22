@@ -45,6 +45,19 @@ class UserProductsController extends Controller
         ]);
     }
 
+    public function trashed(User $owner): Response
+    {
+        $this->authorize('view', $owner);
+
+        $products = $owner->products()->onlyTrashed()
+            ->orderBy('name')->get();
+
+        return Inertia::render('products/ProductsTrashed', [
+            'owner'    => UserResource::make($owner),
+            'products' => fn() => ProductResource::collection($products),
+        ]);
+    }
+
     public function store(
         UpdateUserProductsRequest $request,
         User $owner
