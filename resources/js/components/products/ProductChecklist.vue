@@ -8,10 +8,16 @@ import AppInput from "@/components/ui/input/Input.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import AppCheckbox from "@/components/ui/checkbox/Checkbox.vue"
 
-const props = defineProps<{
-    products: Product[]
-    user?: User
-}>()
+const props = withDefaults(
+    defineProps<{
+        products: Product[]
+        user?: User
+        deletedProductNames?: string[]
+    }>(),
+    {
+        deletedProductNames: () => [],
+    }
+)
 
 const emit = defineEmits<{
     changeQuantity: [productId: string, next: number]
@@ -171,9 +177,20 @@ function incrementQuantity(product: Product) {
                     <AppInput
                         class="rounded-e-none h-[unset]"
                         v-model="productForm.name"
+                        list="deleted-products-home"
+                        autocomplete="off"
                         @change="handleMarkdownProducts"
                         required
                     />
+
+                    <datalist id="deleted-products-home">
+                        <option
+                            v-for="name in deletedProductNames"
+                            :key="name"
+                        >
+                            {{ name }}
+                        </option>
+                    </datalist>
 
                     <AppButton
                         class="rounded-s-none aspect-square h-[unset] w-auto p-0"

@@ -13,6 +13,7 @@ import { formatCurrency } from "@/composables/formatHelpers"
 interface Props {
     owner: User
     products: Product[]
+    deletedProductNames: string[]
 }
 
 const props = defineProps<Props>()
@@ -139,8 +140,18 @@ function handleAdd() {
                         v-model="addForm.name"
                         class="flex-1 rounded-e-none h-[unset]"
                         placeholder="Nombre del producto"
+                        list="deleted-products-index"
+                        autocomplete="off"
                         required
                     />
+                    <datalist id="deleted-products-index">
+                        <option
+                            v-for="name in deletedProductNames"
+                            :key="name"
+                        >
+                            {{ name }}
+                        </option>
+                    </datalist>
                     <AppButton
                         class="rounded-s-none aspect-square h-[unset] w-auto p-0"
                         :disabled="addForm.processing"

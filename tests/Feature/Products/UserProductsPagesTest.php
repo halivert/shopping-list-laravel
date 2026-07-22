@@ -40,6 +40,21 @@ test('products index includes last price for products with purchases', function 
         );
 });
 
+test('products index includes only deleted product names', function () {
+    $user = User::factory()->create();
+    Product::factory()->create(['owner_id' => $user->id, 'name' => 'Arroz']);
+    $deleted = Product::factory()->create(['owner_id' => $user->id, 'name' => 'Leche']);
+    $deleted->delete();
+
+    $this->actingAs($user)
+        ->get(route('users.products.index', ['owner' => $user]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('products/ProductsIndex')
+            ->where('deletedProductNames', ['Leche'])
+        );
+});
+
 test('owner can view products sort page', function () {
     $user = User::factory()->create();
 

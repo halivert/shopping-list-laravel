@@ -32,6 +32,8 @@ class UserProductsController extends Controller
         return Inertia::render('products/ProductsIndex', [
             'owner'    => UserResource::make($owner),
             'products' => fn() => ProductResource::collection($products),
+            'deletedProductNames' => fn() => $owner->products()->onlyTrashed()
+                ->orderBy('name')->pluck('name'),
         ]);
     }
 
