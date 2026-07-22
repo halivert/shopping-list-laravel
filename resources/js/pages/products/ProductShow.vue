@@ -30,26 +30,41 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 
 const isEditing = ref(false)
 
-const renameForm = useForm({ name: props.product.name })
+const renameForm = useForm({
+    name: props.product.name,
+    unit: props.product.unit ?? "",
+})
+
+const unitSuggestions = ["L", "ml", "kg", "g", "pza"]
 
 function startEdit() {
     renameForm.name = props.product.name
+    renameForm.unit = props.product.unit ?? ""
     isEditing.value = true
 }
 
 function submitRename() {
-    renameForm.put(route("products.update", props.product.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            isEditing.value = false
-        },
-    })
+    renameForm
+        .transform((data) => ({ ...data, unit: data.unit || null }))
+        .put(route("products.update", props.product.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                isEditing.value = false
+            },
+        })
 }
 
 function cancelEdit() {
     renameForm.reset()
     isEditing.value = false
 }
+
+// ── Unit label ────────────────────────────────────────────────────────────────
+
+const unitLabel = computed(() => props.product.unit ?? "")
+const unitSuffix = computed(() =>
+    props.product.unit ? ` / ${props.product.unit}` : ""
+)
 
 // ── Delete ────────────────────────────────────────────────────────────────────
 
@@ -92,6 +107,18 @@ const chartPoints = computed(() =>
                             autofocus
                             required
                         />
+                        <AppInput
+                            v-model="renameForm.unit"
+                            class="h-9 w-20"
+                            placeholder="Unidad"
+                            list="unit-suggestions"
+                            autocomplete="off"
+                        />
+                        <datalist id="unit-suggestions">
+                            <option v-for="u in unitSuggestions" :key="u">
+                                {{ u }}
+                            </option>
+                        </datalist>
                         <AppButton type="submit" :disabled="renameForm.processing">
                             Guardar
                         </AppButton>
@@ -127,7 +154,7 @@ const chartPoints = computed(() =>
                 <div v-if="stats.averagePrice !== null" class="rounded-lg border p-3">
                     <p class="text-xs text-muted-foreground">Precio promedio</p>
                     <p class="text-2xl font-semibold">
-                        {{ formatCurrency(stats.averagePrice) }}
+                        {{ formatCurrency(stats.averagePrice) }}{{ unitSuffix }}
                     </p>
                 </div>
 
@@ -138,7 +165,7 @@ const chartPoints = computed(() =>
                     <p class="text-xs text-muted-foreground">Rango de precio</p>
                     <p class="font-semibold">
                         {{ formatCurrency(stats.minPrice) }} –
-                        {{ formatCurrency(stats.maxPrice) }}
+                        {{ formatCurrency(stats.maxPrice) }}{{ unitSuffix }}
                     </p>
                 </div>
 
@@ -177,9 +204,11 @@ const chartPoints = computed(() =>
             <!-- Price graph -->
             <div v-if="chartPoints.length > 0">
                 <h2 class="text-sm font-medium mb-2 text-muted-foreground">
-                    Historial de precio
+                    Historial de precio<template v-if="unitLabel">
+                        (por {{ unitLabel }})</template
+                    >
                 </h2>
-                <PriceChart :points="chartPoints" />
+                <PriceChart :points="chartPoints" :unit="product.unit" />
             </div>
             <p v-else class="text-sm text-muted-foreground">
                 Aún no hay precios registrados para este producto.
@@ -208,10 +237,15 @@ const chartPoints = computed(() =>
                         </Link>
                         <span class="text-muted-foreground">
                             <template v-if="purchase.quantity !== null">
-                                {{ purchase.quantity }}×
+                                <template v-if="unitLabel">
+                                    {{ purchase.quantity }} {{ unitLabel }} ·
+                                </template>
+                                <template v-else>
+                                    {{ purchase.quantity }}×
+                                </template>
                             </template>
                             <template v-if="purchase.unitPrice !== null">
-                                {{ formatCurrency(purchase.unitPrice) }}
+                                {{ formatCurrency(purchase.unitPrice) }}{{ unitSuffix }}
                             </template>
                         </span>
                     </li>

@@ -17,6 +17,7 @@ class ProductResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'unit' => $this->unit,
             'owner' => UserResource::make($this->whenLoaded('owner')),
             'searchIndex' => $this->whenNotNull($this->search_index),
             'shoppingIndex' => $this->whenNotNull($this->shopping_index),

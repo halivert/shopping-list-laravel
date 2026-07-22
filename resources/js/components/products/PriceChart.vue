@@ -9,6 +9,7 @@ interface Point {
 
 const props = defineProps<{
     points: Point[]
+    unit?: string | null
 }>()
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -70,7 +71,7 @@ const tooltip = computed(() => {
     return {
         x: scaleX(shownIndex.value),
         y: scaleY(p.price),
-        label: `${p.date}: ${formatCurrency(p.price)}`,
+        label: `${p.date}: ${formatCurrency(p.price)}${props.unit ? ` / ${props.unit}` : ""}`,
     }
 })
 

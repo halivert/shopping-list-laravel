@@ -11,6 +11,7 @@ const checked = defineModel<boolean>("checked")
 
 const props = defineProps<{
     lastPrice?: number
+    unit?: string | null
 }>()
 
 const updateQuantity = (newQuantity: number) => {
@@ -105,7 +106,11 @@ const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
                     class="px-3"
                     @contextmenu.prevent="context(() => (editCount = true))"
                 >
-                    {{ quantity }}
+                    {{ quantity }}<span
+                        v-if="unit"
+                        class="text-xs text-muted-foreground"
+                        >{{ " " + unit }}</span
+                    >
                 </span>
                 <button
                     class="h-6 w-6 rounded bg-primary text-background p-0.5"
@@ -152,6 +157,12 @@ const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
                     min="0"
                     step="0.001"
                 />
+
+                <span
+                    v-if="unit"
+                    class="absolute top-1/2 -translate-y-1/2 right-2 text-xs text-muted-foreground pointer-events-none"
+                    >/{{ unit }}</span
+                >
 
                 <span
                     v-if="total && quantity !== 1"

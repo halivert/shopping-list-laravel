@@ -25,6 +25,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|required|string|max:100',
+            'unit' => 'sometimes|nullable|string|max:20',
             'is_required' => 'sometimes|boolean',
             'required_quantity' => 'sometimes|integer|min:1',
         ];

@@ -21,6 +21,19 @@ test('owner can view product show page', function () {
         );
 });
 
+test('product show page exposes the product unit', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['owner_id' => $user->id, 'unit' => 'L']);
+
+    $this->actingAs($user)
+        ->get(route('products.show', $product))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('products/ProductShow')
+            ->where('product.unit', 'L')
+        );
+});
+
 test('product show page has correct stats for a product with purchases', function () {
     $user = User::factory()->create();
     $product = Product::factory()->create([
