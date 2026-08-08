@@ -43,7 +43,7 @@ class UpdateShoppingDayRequest extends FormRequest
                 Rule::exists('shopping_day_items', 'id')
                     ->where('shopping_day_id', $this->shoppingDay->id),
             ],
-            'items.*.unitPrice' => 'sometimes|numeric',
+            'items.*.unitPrice' => 'sometimes|numeric|min:0',
             'items.*.quantity' => 'sometimes|numeric',
         ];
     }

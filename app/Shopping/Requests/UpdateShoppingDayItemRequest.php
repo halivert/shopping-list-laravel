@@ -24,7 +24,7 @@ class UpdateShoppingDayItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'unitPrice' => 'sometimes|nullable|numeric',
+            'unitPrice' => 'sometimes|nullable|numeric|min:0',
             'quantity' => 'sometimes|numeric'
         ];
     }

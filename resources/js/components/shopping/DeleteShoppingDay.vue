@@ -58,16 +58,21 @@ function closeModal() {
 
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <AppButton variant="secondary" @click="closeModal">
+                        <AppButton
+                            type="button"
+                            variant="secondary"
+                            @click="closeModal"
+                        >
                             Cancelar
                         </AppButton>
                     </DialogClose>
 
                     <AppButton
+                        type="submit"
                         variant="destructive"
                         :disabled="form.processing"
                     >
-                        <button type="submit">Borrar día de compras</button>
+                        Borrar día de compras
                     </AppButton>
                 </DialogFooter>
             </form>

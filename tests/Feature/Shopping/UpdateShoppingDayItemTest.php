@@ -27,6 +27,24 @@ test('updating an item persists the unit price and quantity', function () {
         ->quantity->toBe(3.0);
 });
 
+test('a negative unit price is rejected', function () {
+    $user = User::factory()->create();
+    $shoppingDay = ShoppingDay::factory()->create(['owner_id' => $user->id]);
+    $item = ShoppingDayItem::factory()->create([
+        'shopping_day_id' => $shoppingDay->id,
+        'unit_price' => 1,
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('shopping-days.items.update', [
+            'shoppingDay' => $shoppingDay,
+            'shoppingDayItem' => $item,
+        ]), ['unitPrice' => -5])
+        ->assertInvalid(['unitPrice']);
+
+    expect($item->fresh()->unit_price)->toBe(1.0);
+});
+
 test('updating an item broadcasts ShoppingDayItemUpdated only to other sockets', function () {
     Event::fake();
 
