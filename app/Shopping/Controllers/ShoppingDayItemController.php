@@ -84,7 +84,7 @@ class ShoppingDayItemController extends Controller
             ),
         ]);
 
-        ShoppingDayItemUpdated::dispatch($shoppingDayItem->fresh());
+        broadcast(new ShoppingDayItemUpdated($shoppingDayItem->fresh()))->toOthers();
 
         $shoppingDay->touch();
 

@@ -66,6 +66,12 @@ const handleMaybeChecked = useDebounceFn(function handleMaybeChecked() {
     checked.value = Boolean(unitPrice.value)
 }, 1000)
 
+function handleUnitPriceInput(e: Event) {
+    const value = (e.target as HTMLInputElement).valueAsNumber
+
+    unitPrice.value = Number.isNaN(value) ? 0 : Math.max(0, value)
+}
+
 function handleApplyCalculated({
     unitPrice: calculatedPrice,
     quantity: calculatedQuantity,
@@ -165,7 +171,7 @@ function handleApplyCalculated({
                     type="number"
                     :placeholder="lastPriceFormatted"
                     :modelValue="unitPrice || ''"
-                    @input="unitPrice = $event.target.valueAsNumber"
+                    @input="handleUnitPriceInput"
                     @blur="handleMaybeChecked"
                     min="0"
                     step="0.001"

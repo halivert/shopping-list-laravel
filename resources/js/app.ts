@@ -1,7 +1,7 @@
 import "../css/app.css"
 
-import { createInertiaApp } from "@inertiajs/vue3"
-import { configureEcho } from "@laravel/echo-vue"
+import { createInertiaApp, router } from "@inertiajs/vue3"
+import { configureEcho, echo } from "@laravel/echo-vue"
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers"
 import type { DefineComponent } from "vue"
 import { createApp, h } from "vue"
@@ -25,6 +25,17 @@ import { initializeTheme } from "./composables/useAppearance"
 configureEcho({
     broadcaster: "reverb",
     namespace: "App",
+})
+
+// Tag every Inertia request with our Reverb socket id so the backend can
+// exclude this tab from broadcasts it triggers itself (via `toOthers()`),
+// preventing our own echoed updates from clobbering in-progress edits.
+router.on("before", (event) => {
+    const socketId = echo().socketId()
+
+    if (socketId) {
+        event.detail.visit.headers["X-Socket-ID"] = socketId
+    }
 })
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel"
