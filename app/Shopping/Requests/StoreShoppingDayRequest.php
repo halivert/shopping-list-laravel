@@ -29,6 +29,7 @@ class StoreShoppingDayRequest extends FormRequest
     {
         return [
             'date' => 'required|date_format:Y-m-d',
+            'empty' => 'sometimes|boolean',
         ];
     }
 }
