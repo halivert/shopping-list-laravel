@@ -48,7 +48,7 @@ class NewProductToShoppingDayController extends Controller
             }
         );
 
-        ShoppingDayItemCreated::dispatch($shoppingDayItem->load('product'));
+        broadcast(new ShoppingDayItemCreated($shoppingDayItem->load('product')))->toOthers();
 
         return $request->wantsJson()
             ? response()->json(

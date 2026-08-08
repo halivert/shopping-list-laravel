@@ -13,7 +13,6 @@ import DialogFooter from "@/components/ui/dialog/DialogFooter.vue"
 import DialogHeader from "@/components/ui/dialog/DialogHeader.vue"
 import DialogTitle from "@/components/ui/dialog/DialogTitle.vue"
 import DialogTrigger from "@/components/ui/dialog/DialogTrigger.vue"
-import { formatCurrency } from "@/composables/formatHelpers"
 import { PRODUCT_UNITS } from "@/types/Product"
 
 const props = defineProps<{
@@ -66,9 +65,9 @@ function onOpenChange(next: boolean) {
 
 // ── Result ────────────────────────────────────────────────────────────────────
 
-// Matches the unit_price/quantity columns' decimal(9,4) precision.
-function round4(n: number): number {
-    return Math.round(n * 10000) / 10000
+// Matches the price/quantity inputs' step="0.001" precision.
+function round3(n: number): number {
+    return Math.round(n * 1000) / 1000
 }
 
 const result = computed(() => {
@@ -85,8 +84,8 @@ const result = computed(() => {
     if (!Number.isFinite(unitPrice)) return null
 
     return {
-        unitPrice: round4(unitPrice),
-        quantity: round4(quantity),
+        unitPrice: round3(unitPrice),
+        quantity: round3(quantity),
     }
 })
 
@@ -167,7 +166,7 @@ function handleApply() {
                 </div>
 
                 <p v-if="result" class="text-sm text-muted-foreground">
-                    ≈ {{ formatCurrency(result.unitPrice) }}
+                    ≈ {{ result.unitPrice }}
                     <template v-if="unit"> / {{ unit }}</template>
                 </p>
             </div>
