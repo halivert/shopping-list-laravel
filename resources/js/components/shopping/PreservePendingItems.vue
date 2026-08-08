@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from "vue"
 import { useForm } from "@inertiajs/vue3"
 
 import type { ShoppingDay } from "@/types/ShoppingDay"
@@ -17,6 +18,7 @@ const props = defineProps<{
     shoppingDay: ShoppingDay
 }>()
 
+const open = ref(false)
 const form = useForm({})
 
 function preservePendingItems(e: Event) {
@@ -26,6 +28,10 @@ function preservePendingItems(e: Event) {
         route("shopping-days.preserve-pending", { shoppingDay: props.shoppingDay }),
         {
             async: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                open.value = false
+            },
             onFinish: () => form.reset(),
         }
     )
@@ -38,7 +44,15 @@ function closeModal() {
 </script>
 
 <template>
-    <AppDialog>
+    <AppDialog
+        :open="open"
+        @update:open="
+            (value) => {
+                open = value
+                if (!value) closeModal()
+            }
+        "
+    >
         <DialogTrigger as-child>
             <AppButton class="flex-1" variant="default">
                 Guardar pendientes
@@ -58,11 +72,7 @@ function closeModal() {
 
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <AppButton
-                            type="button"
-                            variant="secondary"
-                            @click="closeModal"
-                        >
+                        <AppButton type="button" variant="secondary">
                             Cancelar
                         </AppButton>
                     </DialogClose>
