@@ -9,6 +9,7 @@ import AppLayout from "@/layouts/AppLayout.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import NewProductInput from "@/components/shopping/NewProductInput.vue"
 import ShoppingList from "@/components/shopping/ShoppingList.vue"
+import PreservePendingItems from "@/components/shopping/PreservePendingItems.vue"
 import { formatDate, formatCurrency } from "@/composables/formatHelpers"
 import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
 import { Product } from "@/types/Product"
@@ -153,6 +154,7 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                 >
                     Editar
                 </AppButton>
+                <PreservePendingItems :shoppingDay="shoppingDay" />
             </div>
         </div>
     </AppLayout>
