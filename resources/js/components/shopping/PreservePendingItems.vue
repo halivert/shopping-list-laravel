@@ -40,7 +40,7 @@ function closeModal() {
 <template>
     <AppDialog>
         <DialogTrigger as-child>
-            <AppButton class="flex-1" variant="secondary">
+            <AppButton class="flex-1" variant="default">
                 Guardar pendientes
             </AppButton>
         </DialogTrigger>
