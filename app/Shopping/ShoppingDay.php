@@ -27,7 +27,7 @@ class ShoppingDay extends Model
     protected function casts(): array
     {
         return [
-            'date' => 'datetime:Y-m-d',
+            'date' => 'date:Y-m-d',
         ];
     }
 

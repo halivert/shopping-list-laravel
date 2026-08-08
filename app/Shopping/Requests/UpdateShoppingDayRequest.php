@@ -26,7 +26,7 @@ class UpdateShoppingDayRequest extends FormRequest
     {
         return [
             'touch' => 'sometimes|boolean',
-            'date' => 'sometimes|date',
+            'date' => 'sometimes|date_format:Y-m-d',
 
             'products' => 'sometimes|array',
             'products.*' => [

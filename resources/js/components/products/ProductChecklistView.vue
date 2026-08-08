@@ -8,7 +8,7 @@ import type { Product } from "@/types/Product"
 import type { User } from "@/types"
 import AppButton from "@/components/ui/button/Button.vue"
 import ProductChecklist from "@/components/products/ProductChecklist.vue"
-import { formatCurrency } from "@/composables/formatHelpers"
+import { formatCurrency, toLocalDateString } from "@/composables/formatHelpers"
 
 const props = withDefaults(
     defineProps<{
@@ -95,7 +95,7 @@ function onChangeQuantity(productId: string, next: number) {
 function handleCreateShoppingDay() {
     router.post(
         route("users.shopping-days.store", { owner: ownerId.value }),
-        { date: new Date() }
+        { date: toLocalDateString() }
     )
 }
 

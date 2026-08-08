@@ -17,7 +17,7 @@ class ShoppingDayResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'date' => $this->date,
+            'date' => $this->date->format('Y-m-d'),
             'owner' => UserResource::make($this->owner),
             'items' => ShoppingDayItemResource::collection(
                 $this->whenLoaded('items')
