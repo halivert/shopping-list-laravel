@@ -1,6 +1,7 @@
 <?php
 
 use App\Shopping\Controllers\NewProductToShoppingDayController;
+use App\Shopping\Controllers\PreservePendingItemsController;
 use App\Shopping\Controllers\ShoppingDayController;
 use App\Shopping\Controllers\ShoppingDayItemController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,11 @@ Route::middleware(['auth'])->group(function () {
         'shopping-days/{shoppingDay}/products',
         NewProductToShoppingDayController::class
     )->name('shopping-days.products.create');
+
+    Route::post(
+        'shopping-days/{shoppingDay}/preserve-pending',
+        PreservePendingItemsController::class
+    )->name('shopping-days.preserve-pending');
 
     Route::resource(
         'shopping-days.items',
