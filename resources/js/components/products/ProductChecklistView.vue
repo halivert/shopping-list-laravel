@@ -92,10 +92,10 @@ function onChangeQuantity(productId: string, next: number) {
 
 // ── Start shopping day ────────────────────────────────────────────────────────
 
-function handleCreateShoppingDay() {
+function handleCreateShoppingDay(empty = false) {
     router.post(
         route("users.shopping-days.store", { owner: ownerId.value }),
-        { date: toLocalDateString() }
+        { date: toLocalDateString(), empty }
     )
 }
 
@@ -151,13 +151,22 @@ onUnmounted(() => {
                     </span>
                 </div>
 
-                <AppButton
-                    variant="default"
-                    :disabled="articleCount === 0"
-                    @click="handleCreateShoppingDay"
-                >
-                    Empezar día de compras
-                </AppButton>
+                <div class="flex gap-2 items-center">
+                    <AppButton
+                        variant="secondary"
+                        @click="handleCreateShoppingDay(true)"
+                    >
+                        Empezar de cero
+                    </AppButton>
+
+                    <AppButton
+                        variant="default"
+                        :disabled="articleCount === 0"
+                        @click="handleCreateShoppingDay(false)"
+                    >
+                        Empezar día de compras
+                    </AppButton>
+                </div>
             </div>
 
             <div

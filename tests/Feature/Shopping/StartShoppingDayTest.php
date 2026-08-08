@@ -96,3 +96,47 @@ test('starting a shopping day with no required products creates an empty day', f
 
     expect(ShoppingDayItem::query()->count())->toBe(0);
 });
+
+test('starting an empty shopping day creates no items even with required products', function () {
+    $user = User::factory()->create();
+    Product::factory()->create(['owner_id' => $user->id, 'is_required' => true, 'required_quantity' => 2]);
+    Product::factory()->create(['owner_id' => $user->id, 'is_required' => true, 'required_quantity' => 1]);
+
+    $this->actingAs($user)
+        ->post(route('users.shopping-days.store', ['owner' => $user->id]), [
+            'date' => now()->toDateString(),
+            'empty' => true,
+        ])
+        ->assertRedirect();
+
+    expect(ShoppingDayItem::query()->count())->toBe(0);
+});
+
+test('starting an empty shopping day leaves required flags untouched', function () {
+    $user = User::factory()->create();
+    Product::factory()->create(['owner_id' => $user->id, 'is_required' => true, 'required_quantity' => 3]);
+    Product::factory()->create(['owner_id' => $user->id, 'is_required' => true, 'required_quantity' => 1]);
+
+    $this->actingAs($user)
+        ->post(route('users.shopping-days.store', ['owner' => $user->id]), [
+            'date' => now()->toDateString(),
+            'empty' => true,
+        ]);
+
+    expect($user->products()->where('is_required', true)->count())->toBe(2);
+});
+
+test('starting a shopping day with empty explicitly false still imports required products', function () {
+    $user = User::factory()->create();
+    Product::factory()->create(['owner_id' => $user->id, 'is_required' => true, 'required_quantity' => 1]);
+
+    $this->actingAs($user)
+        ->post(route('users.shopping-days.store', ['owner' => $user->id]), [
+            'date' => now()->toDateString(),
+            'empty' => false,
+        ])
+        ->assertRedirect();
+
+    expect(ShoppingDayItem::query()->count())->toBe(1);
+    expect($user->products()->where('is_required', true)->count())->toBe(0);
+});

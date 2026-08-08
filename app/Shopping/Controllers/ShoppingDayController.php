@@ -62,23 +62,25 @@ class ShoppingDayController extends Controller
                 'date' => Carbon::parse($attrs['date']),
             ]);
 
-            $requiredProducts = $owner->products()
-                ->where('is_required', true)
-                ->get();
+            if (! ($attrs['empty'] ?? false)) {
+                $requiredProducts = $owner->products()
+                    ->where('is_required', true)
+                    ->get();
 
-            $itemsToCreate = $requiredProducts->map(
-                fn($product) => [
-                    'product_id' => $product->id,
-                    'index' => $product->shopping_index ?? 0,
-                    'quantity' => $product->required_quantity,
-                ]
-            );
+                $itemsToCreate = $requiredProducts->map(
+                    fn($product) => [
+                        'product_id' => $product->id,
+                        'index' => $product->shopping_index ?? 0,
+                        'quantity' => $product->required_quantity,
+                    ]
+                );
 
-            $shoppingDay->items()->createMany($itemsToCreate);
+                $shoppingDay->items()->createMany($itemsToCreate);
 
-            $owner->products()
-                ->where('is_required', true)
-                ->update(['is_required' => false]);
+                $owner->products()
+                    ->where('is_required', true)
+                    ->update(['is_required' => false]);
+            }
 
             return $shoppingDay;
         });
