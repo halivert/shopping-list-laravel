@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watchEffect } from "vue"
-import { useDebounceFn } from "@vueuse/core"
-import { useHttp } from "@inertiajs/vue3"
-import { echo, useEcho } from "@laravel/echo-vue"
+import { useEcho } from "@laravel/echo-vue"
 
 import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
+import { useQueuedUpdates } from "@/composables/useQueuedUpdates"
 import ShoppingListItem from "./ShoppingListItem.vue"
 import { ShoppingDay } from "@/types/ShoppingDay"
 
@@ -50,58 +49,18 @@ watchEffect(() => {
 })
 
 // ── Saving item changes ───────────────────────────────────────────────────────
-// Changes are accumulated per item and flushed in a single debounced PATCH, so
-// setting price and quantity at once (e.g. from the unit price calculator)
-// produces one request with both fields.
-//
-// useHttp is used instead of router visits on purpose: Inertia cancels every
-// in-flight async visit when a new visit targets a URL other than the current
-// page, which made concurrent item updates cancel each other.
+// Price and quantity set at once (e.g. from the unit price calculator) are
+// merged into a single PATCH per item.
 
-type ItemChanges = { unitPrice?: number; quantity?: number }
-
-const http = useHttp<ItemChanges>({})
-const pendingChanges = new Map<string, ItemChanges>()
-const itemSavers = new Map<string, () => void>()
-
-function saveItem(itemId: string) {
-    const changes = pendingChanges.get(itemId)
-    pendingChanges.delete(itemId)
-
-    if (!changes) return
-
-    const socketId = echo().socketId()
-
-    http.transform(() => changes)
-        .patch(
-            route("shopping-days.items.update", {
-                shoppingDay: props.shoppingDay.id,
-                shoppingDayItem: itemId,
-            }),
-            { headers: socketId ? { "X-Socket-ID": socketId } : {} }
-        )
-        .catch(() => {
-            // Keep the unsaved changes (unless newer ones arrived meanwhile)
-            // so the next edit of this item retries them.
-            pendingChanges.set(itemId, {
-                ...changes,
-                ...pendingChanges.get(itemId),
-            })
-        })
-}
-
-function queueItemUpdate(itemId: string, changes: ItemChanges) {
-    pendingChanges.set(itemId, { ...pendingChanges.get(itemId), ...changes })
-
-    if (!itemSavers.has(itemId)) {
-        itemSavers.set(
-            itemId,
-            useDebounceFn(() => saveItem(itemId), 500)
-        )
-    }
-
-    itemSavers.get(itemId)!()
-}
+const { queue: queueItemUpdate } = useQueuedUpdates<{
+    unitPrice: number
+    quantity: number
+}>((itemId) =>
+    route("shopping-days.items.update", {
+        shoppingDay: props.shoppingDay.id,
+        shoppingDayItem: itemId,
+    })
+)
 
 function handleUpdateUnitPrice(itemId: string, unitPrice: number) {
     queueItemUpdate(itemId, { unitPrice })
@@ -150,11 +109,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-    // Don't lose edits still waiting on their debounce when leaving the page
-    for (const itemId of [...pendingChanges.keys()]) {
-        saveItem(itemId)
-    }
-
     echoUpdated.leave()
     echoCreated.leave()
 })

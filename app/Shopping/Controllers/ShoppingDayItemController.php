@@ -104,7 +104,7 @@ class ShoppingDayItemController extends Controller
         $shoppingDayItem->delete();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { router, useForm } from "@inertiajs/vue3"
-import { useDebounceFn } from "@vueuse/core"
+import { useForm } from "@inertiajs/vue3"
 
 import type { Product } from "@/types/Product"
 import type { User } from "@/types"
@@ -22,6 +21,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     changeQuantity: [productId: string, next: number]
+    changeRequired: [productId: string, required: boolean]
 }>()
 
 // ── Add new product ───────────────────────────────────────────────────────────
@@ -53,26 +53,8 @@ function handleNewProduct() {
 
 // ── Checklist state ───────────────────────────────────────────────────────────
 
-function patchProduct<T extends { is_required: boolean }>(
-    product: Product,
-    attrs: T
-) {
-    router.put<T>(route("products.update", product.id), attrs, {
-        preserveScroll: true,
-        preserveState: true,
-    })
-}
-
-const debouncedPatchRequired = useDebounceFn(
-    (product: Product, value: boolean) => {
-        patchProduct(product, { is_required: value })
-    },
-    500
-)
-
 function handleRequiredChange(product: Product, checked: boolean) {
-    product.isRequired = checked
-    debouncedPatchRequired(product, checked)
+    emit("changeRequired", product.id, checked)
 }
 
 function decrementQuantity(product: Product) {

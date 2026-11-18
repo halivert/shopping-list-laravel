@@ -88,7 +88,7 @@ class ProductsShareController extends Controller
         $access->save();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 
@@ -105,7 +105,7 @@ class ProductsShareController extends Controller
         $access->save();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 
@@ -131,7 +131,7 @@ class ProductsShareController extends Controller
         $access->delete();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 }

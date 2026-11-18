@@ -2,12 +2,12 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import { router, usePage } from "@inertiajs/vue3"
 import { useEcho } from "@laravel/echo-vue"
-import { useDebounceFn } from "@vueuse/core"
 
 import type { Product } from "@/types/Product"
 import type { User } from "@/types"
 import AppButton from "@/components/ui/button/Button.vue"
 import ProductChecklist from "@/components/products/ProductChecklist.vue"
+import { useQueuedUpdates } from "@/composables/useQueuedUpdates"
 import { formatCurrency, toLocalDateString } from "@/composables/formatHelpers"
 
 const props = withDefaults(
@@ -55,44 +55,41 @@ const estimatedTotal = computed(() =>
     }, 0)
 )
 
-// ── Optimistic quantity updates ───────────────────────────────────────────────
+// ── Optimistic updates ────────────────────────────────────────────────────────
+// Local items change immediately so the checklist and summary header update
+// before the server responds; changes are saved in one debounced request per
+// product, so quick edits on several products are all kept.
 
-// One debounced saver per product so rapid edits on different products
-// don't cancel each other.
-const quantitySavers = new Map<
-    string,
-    ReturnType<typeof useDebounceFn>
->()
-
-function getQuantitySaver(productId: string) {
-    if (!quantitySavers.has(productId)) {
-        quantitySavers.set(
-            productId,
-            useDebounceFn((next: number) => {
-                router.put(
-                    route("products.update", productId),
-                    { required_quantity: next },
-                    { preserveScroll: true, preserveState: true }
-                )
-            }, 600)
-        )
-    }
-    return quantitySavers.get(productId)!
-}
+const { queue: queueProductUpdate, flushAll: saveProductUpdates } =
+    useQueuedUpdates<{
+        is_required: boolean
+        required_quantity: number
+    }>((productId) => route("products.update", productId), {
+        method: "put",
+        delay: 600,
+    })
 
 function onChangeQuantity(productId: string, next: number) {
-    // Optimistic: mutate the local items immediately so the stepper and
-    // summary header update before the server responds.
     const item = items.value.find((p) => p.id === productId)
     if (item) item.requiredQuantity = next
 
-    // Debounced: fire a single PUT after the user stops tapping.
-    getQuantitySaver(productId)(next)
+    queueProductUpdate(productId, { required_quantity: next })
+}
+
+function onChangeRequired(productId: string, required: boolean) {
+    const item = items.value.find((p) => p.id === productId)
+    if (item) item.isRequired = required
+
+    queueProductUpdate(productId, { is_required: required })
 }
 
 // ── Start shopping day ────────────────────────────────────────────────────────
 
-function handleCreateShoppingDay(empty = false) {
+async function handleCreateShoppingDay(empty = false) {
+    // The new day is built from the saved checklist, so wait for edits that
+    // are still debouncing (e.g. a product checked right before tapping).
+    await saveProductUpdates()
+
     router.post(
         route("users.shopping-days.store", { owner: ownerId.value }),
         { date: toLocalDateString(), empty }
@@ -187,6 +184,7 @@ onUnmounted(() => {
                 :user="owner"
                 :deleted-product-names="deletedProductNames"
                 @change-quantity="onChangeQuantity"
+                @change-required="onChangeRequired"
             />
         </section>
 
