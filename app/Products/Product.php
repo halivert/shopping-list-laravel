@@ -20,11 +20,12 @@ class Product extends Model
 
     /**
      * Canonical units a product's price can be expressed per. Kept in sync
-     * with the frontend's PRODUCT_UNITS (resources/js/types/Product.ts) and
-     * UnitPriceCalculator.vue's conversion table — every unit here always has
-     * a metric conversion pair (ml<->L, g<->kg).
+     * with the frontend's PRODUCT_UNITS (resources/js/types/Product.ts).
+     * Only the large units: prices per g/ml are tiny numbers that lose
+     * precision in decimal(9, 4). Packages in g/ml are still entered through
+     * UnitPriceCalculator.vue, which converts them to kg/L.
      */
-    public const UNITS = ['L', 'ml', 'kg', 'g'];
+    public const UNITS = ['L', 'kg'];
 
     protected $fillable = [
         'owner_id',

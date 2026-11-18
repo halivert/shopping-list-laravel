@@ -128,3 +128,28 @@ test('user cannot preserve pending items on another user shopping day', function
         ->post(route('shopping-days.preserve-pending', $shoppingDay))
         ->assertNotFound();
 });
+
+test('preserving pending items rounds a fractional quantity up to a whole unit', function (float $quantity, int $expected) {
+    $user = User::factory()->create();
+    $shoppingDay = ShoppingDay::factory()->create(['owner_id' => $user->id]);
+
+    $product = Product::factory()->create([
+        'owner_id' => $user->id,
+        'is_required' => false,
+        'required_quantity' => 1,
+    ]);
+    ShoppingDayItem::factory()->create([
+        'shopping_day_id' => $shoppingDay->id,
+        'product_id' => $product->id,
+        'unit_price' => null,
+        'quantity' => $quantity,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('shopping-days.preserve-pending', $shoppingDay));
+
+    expect($product->fresh()->required_quantity)->toBe($expected);
+})->with([
+    'less than one' => [0.5, 1],
+    'between units' => [2.25, 3],
+]);

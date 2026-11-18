@@ -171,7 +171,7 @@ function handleApplyCalculated({
                     name="quantity"
                     type="number"
                     inputmode="decimal"
-                    step="0.001"
+                    step="any"
                     :modelValue="quantity"
                     @blur="
                         (e: Event) =>
@@ -192,7 +192,7 @@ function handleApplyCalculated({
                     @input="handleUnitPriceInput"
                     @blur="handleMaybeChecked"
                     min="0"
-                    step="0.001"
+                    step="any"
                 />
 
                 <span

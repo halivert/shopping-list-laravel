@@ -65,7 +65,18 @@ test('user can set an allowed unit on a product', function (string $unit) {
         ->assertRedirect();
 
     expect($product->fresh()->unit)->toBe($unit);
-})->with(['L', 'ml', 'kg', 'g']);
+})->with(['L', 'kg']);
+
+test('small units are no longer accepted, prices are tracked per kg or L', function (string $unit) {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['owner_id' => $user->id, 'unit' => null]);
+
+    $this->actingAs($user)
+        ->put(route('products.update', $product), ['unit' => $unit])
+        ->assertSessionHasErrors(['unit']);
+
+    expect($product->fresh()->unit)->toBeNull();
+})->with(['g', 'ml']);
 
 test('unit must be one of the allowed values', function () {
     $user = User::factory()->create();
