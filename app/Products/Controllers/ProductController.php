@@ -90,7 +90,7 @@ class ProductController extends Controller
         }
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 
@@ -107,10 +107,10 @@ class ProductController extends Controller
             collect($attrs)->only(['name', 'unit', 'is_required', 'required_quantity'])->all()
         );
 
-        ProductUpdated::dispatch($product);
+        broadcast(new ProductUpdated($product))->toOthers();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 
@@ -128,7 +128,7 @@ class ProductController extends Controller
         $product->delete();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : redirect()
                 ->route('users.products.index', ['owner' => $ownerId])
                 ->with('deletedProduct', ['id' => $productId, 'name' => $productName]);
@@ -148,7 +148,7 @@ class ProductController extends Controller
         $model->restore();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 }

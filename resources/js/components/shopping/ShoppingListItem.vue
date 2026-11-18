@@ -89,22 +89,34 @@ function handleApplyCalculated({
     <div
         :class="[
             { checked },
-            'shopping-list-item flex gap-5 flex-nowrap items-start',
+            'shopping-list-item flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5',
         ]"
     >
-        <span class="basis-2/6 shrink-0 slot">
-            <slot />
-        </span>
-        <div class="flex-1 flex gap-3 px-0.5 flex-wrap-reverse justify-end">
+        <div
+            class="sm:basis-2/6 sm:shrink-0 flex items-baseline justify-between gap-2"
+        >
+            <span class="slot break-words min-w-0">
+                <slot />
+            </span>
+            <!-- Line total lives here, not inside the price input, so it never
+                 overlaps the typed price or the unit suffix -->
+            <span
+                v-if="total && quantity !== 1"
+                class="shrink-0 text-sm tabular-nums text-muted-foreground"
+                >{{ formatCurrency(total) }}</span
+            >
+        </div>
+        <div class="flex-1 flex gap-2 items-center px-0.5 sm:justify-end">
             <div
                 v-if="!editCount"
-                class="flex items-center justify-between w-1/2 sm:w-1/3"
+                class="flex items-center justify-between shrink-0 w-32"
             >
                 <button
-                    class="h-6 w-6 rounded bg-secondary disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
+                    type="button"
+                    class="size-9 rounded bg-secondary disabled:opacity-30 disabled:cursor-not-allowed p-1.5"
                     @click="updateQuantity(Math.ceil(quantity - 1))"
                     @contextmenu.prevent="context(() => updateQuantity(1))"
-                    :disabled="quantity === 1"
+                    :disabled="quantity <= 1"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +134,7 @@ function handleApplyCalculated({
                     </svg>
                 </button>
                 <span
-                    class="px-3"
+                    class="px-1 text-center tabular-nums select-none"
                     @contextmenu.prevent="context(() => (editCount = true))"
                 >
                     {{ quantity }}<span
@@ -132,7 +144,8 @@ function handleApplyCalculated({
                     >
                 </span>
                 <button
-                    class="h-6 w-6 rounded bg-primary text-background p-0.5"
+                    type="button"
+                    class="size-9 rounded bg-primary text-background p-1.5"
                     @click="updateQuantity(Math.floor(quantity + 1))"
                     @contextmenu.prevent
                 >
@@ -152,11 +165,12 @@ function handleApplyCalculated({
                     </svg>
                 </button>
             </div>
-            <form v-else @submit.prevent="handleSubmit" class="w-1/2 sm:w-1/3">
+            <form v-else @submit.prevent="handleSubmit" class="shrink-0 w-32">
                 <AppInput
                     class="bg-secondary text-primary px-1 py-0.5 text-lg rounded w-full invalid:text-red-600 invalid:saturate-200"
                     name="quantity"
                     type="number"
+                    inputmode="decimal"
                     step="0.001"
                     :modelValue="quantity"
                     @blur="
@@ -165,10 +179,14 @@ function handleApplyCalculated({
                     "
                 />
             </form>
-            <div class="relative">
+            <div class="relative flex-1 min-w-0 sm:max-w-48">
                 <AppInput
-                    class="bg-secondary invalid:text-red-600 invalid:saturate-200"
+                    :class="[
+                        'bg-secondary invalid:text-red-600 invalid:saturate-200',
+                        unit ? 'pr-10' : '',
+                    ]"
                     type="number"
+                    inputmode="decimal"
                     :placeholder="lastPriceFormatted"
                     :modelValue="unitPrice || ''"
                     @input="handleUnitPriceInput"
@@ -181,12 +199,6 @@ function handleApplyCalculated({
                     v-if="unit"
                     class="absolute top-1/2 -translate-y-1/2 right-2 text-xs text-muted-foreground pointer-events-none"
                     >/{{ unit }}</span
-                >
-
-                <span
-                    v-if="total && quantity !== 1"
-                    class="absolute top-1/2 -translate-y-1/2 right-10 bg-secondary px-1 rounded"
-                    >{{ formatCurrency(total) }}</span
                 >
             </div>
 

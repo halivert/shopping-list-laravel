@@ -121,8 +121,8 @@ const estimatedTotal = computed(() =>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <header class="p-3 top-0 sticky bg-background z-10 space-y-1">
-            <div class="w-full flex justify-between items-center">
-                <form @submit.prevent="handleSubmitDate">
+            <div class="w-full flex flex-wrap justify-between items-center gap-2">
+                <form class="min-w-0" @submit.prevent="handleSubmitDate">
                     <EditShoppingDayDateInput
                         class="flex gap-2 items-center"
                         v-model="editDateForm.date"
@@ -153,14 +153,18 @@ const estimatedTotal = computed(() =>
 
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
             <form
-                class="columns-2"
+                class="columns-2 sm:columns-3 gap-4"
                 @submit.prevent="handleSaveProducts"
                 id="productsForm"
             >
-                <article v-for="product in computedProducts" :key="product.id">
+                <article
+                    v-for="product in computedProducts"
+                    :key="product.id"
+                    class="break-inside-avoid"
+                >
                     <label
                         :class="[
-                            'accent-primary dark:accent-secondary',
+                            'accent-primary dark:accent-secondary flex items-start gap-2 py-2 break-words select-none',
                             {
                                 underline:
                                     !product.lastPrice &&
@@ -172,6 +176,7 @@ const estimatedTotal = computed(() =>
                     >
                         <input
                             type="checkbox"
+                            class="size-5 shrink-0"
                             v-model="updateProductsForm.products"
                             @change="autoSaveItems"
                             :value="product.id"

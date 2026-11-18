@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watchEffect } from "vue"
-import { useDebounceFn } from "@vueuse/core"
-import { useForm } from "@inertiajs/vue3"
 import { useEcho } from "@laravel/echo-vue"
 
 import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
+import { useQueuedUpdates } from "@/composables/useQueuedUpdates"
 import ShoppingListItem from "./ShoppingListItem.vue"
 import { ShoppingDay } from "@/types/ShoppingDay"
 
@@ -49,37 +48,27 @@ watchEffect(() => {
     calculatedTotal.value = prevTotal
 })
 
-const updateForm = useForm({})
+// ── Saving item changes ───────────────────────────────────────────────────────
+// Price and quantity set at once (e.g. from the unit price calculator) are
+// merged into a single PATCH per item.
 
-const handleUpdateUnitPrice = useDebounceFn(function handleUpdateUnitPrice(
-    itemId: string,
+const { queue: queueItemUpdate } = useQueuedUpdates<{
     unitPrice: number
-) {
-    updateForm
-        .transform(() => ({ unitPrice }))
-        .patch(
-            route("shopping-days.items.update", {
-                shoppingDay: props.shoppingDay.id,
-                shoppingDayItem: itemId,
-            }),
-            { async: true, preserveScroll: true }
-        )
-}, 500)
-
-const handleUpdateQuantity = useDebounceFn(function handleUpdateQuantity(
-    itemId: string,
     quantity: number
-) {
-    updateForm
-        .transform(() => ({ quantity }))
-        .patch(
-            route("shopping-days.items.update", {
-                shoppingDay: props.shoppingDay.id,
-                shoppingDayItem: itemId,
-            }),
-            { async: true, preserveScroll: true }
-        )
-}, 500)
+}>((itemId) =>
+    route("shopping-days.items.update", {
+        shoppingDay: props.shoppingDay.id,
+        shoppingDayItem: itemId,
+    })
+)
+
+function handleUpdateUnitPrice(itemId: string, unitPrice: number) {
+    queueItemUpdate(itemId, { unitPrice })
+}
+
+function handleUpdateQuantity(itemId: string, quantity: number) {
+    queueItemUpdate(itemId, { quantity })
+}
 
 const echoUpdated = useEcho<{ shoppingDayItem: ShoppingDayItem }>(
     `shopping-day-updated.${props.shoppingDay.id}`,
@@ -129,7 +118,7 @@ onUnmounted(() => {
     <div class="flex flex-col flex-1 relative">
         <ul
             role="list"
-            class="max-w-full overflow-y-scroll space-y-4 mt-4 pt-1 p-1 overscroll-auto flex-1"
+            class="max-w-full divide-y mt-2 p-1 flex-1 [&>li]:py-3"
         >
             <li v-for="item in computedItems" :key="item.id">
                 <ShoppingListItem

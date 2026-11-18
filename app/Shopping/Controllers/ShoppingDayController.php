@@ -211,7 +211,7 @@ class ShoppingDayController extends Controller
         $shoppingDay->delete();
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : to_route('home');
     }
 

@@ -69,3 +69,24 @@ test('updating an item broadcasts ShoppingDayItemUpdated only to other sockets',
         fn ($event) => $event->socket === 'socket-123'
     );
 });
+
+test('a json update persists a fractional quantity and responds with no content', function () {
+    $user = User::factory()->create();
+    $shoppingDay = ShoppingDay::factory()->create(['owner_id' => $user->id]);
+    $item = ShoppingDayItem::factory()->create([
+        'shopping_day_id' => $shoppingDay->id,
+        'unit_price' => null,
+        'quantity' => 1,
+    ]);
+
+    $this->actingAs($user)
+        ->patchJson(route('shopping-days.items.update', [
+            'shoppingDay' => $shoppingDay,
+            'shoppingDayItem' => $item,
+        ]), ['unitPrice' => 42.5, 'quantity' => 0.75])
+        ->assertNoContent();
+
+    expect($item->fresh())
+        ->unit_price->toBe(42.5)
+        ->quantity->toBe(0.75);
+});

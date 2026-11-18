@@ -85,3 +85,21 @@ test('unapproved partner cannot update owner product', function () {
         ->put(route('products.update', $product), ['is_required' => true])
         ->assertNotFound();
 });
+
+test('updating a product broadcasts ProductUpdated only to other sockets', function () {
+    Event::fake();
+
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['owner_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->withHeaders(['X-Socket-ID' => 'socket-123'])
+        ->put(route('products.update', $product), ['required_quantity' => 3]);
+
+    // The sender already applied the change optimistically; echoing it back
+    // can overwrite newer local edits (e.g. rapid +/- taps).
+    Event::assertDispatched(
+        ProductUpdated::class,
+        fn ($event) => $event->socket === 'socket-123'
+    );
+});

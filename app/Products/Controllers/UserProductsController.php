@@ -83,7 +83,7 @@ class UserProductsController extends Controller
         );
 
         return $request->wantsJson()
-            ? response()->json(204, null)
+            ? response()->json(status: 204)
             : back();
     }
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { router, useForm } from "@inertiajs/vue3"
-import { useDebounceFn } from "@vueuse/core"
+import { useForm } from "@inertiajs/vue3"
 
 import type { Product } from "@/types/Product"
 import type { User } from "@/types"
@@ -22,6 +21,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
     changeQuantity: [productId: string, next: number]
+    changeRequired: [productId: string, required: boolean]
 }>()
 
 // ── Add new product ───────────────────────────────────────────────────────────
@@ -53,26 +53,8 @@ function handleNewProduct() {
 
 // ── Checklist state ───────────────────────────────────────────────────────────
 
-function patchProduct<T extends { is_required: boolean }>(
-    product: Product,
-    attrs: T
-) {
-    router.put<T>(route("products.update", product.id), attrs, {
-        preserveScroll: true,
-        preserveState: true,
-    })
-}
-
-const debouncedPatchRequired = useDebounceFn(
-    (product: Product, value: boolean) => {
-        patchProduct(product, { is_required: value })
-    },
-    500
-)
-
 function handleRequiredChange(product: Product, checked: boolean) {
-    product.isRequired = checked
-    debouncedPatchRequired(product, checked)
+    emit("changeRequired", product.id, checked)
 }
 
 function decrementQuantity(product: Product) {
@@ -90,17 +72,17 @@ function incrementQuantity(product: Product) {
 
 <template>
     <section class="py-3">
-        <ul class="space-y-2">
+        <ul class="space-y-1">
             <li
                 v-for="product in products"
                 :key="product.id"
-                class="flex items-center gap-3 py-1"
+                class="flex items-center gap-3 min-h-11"
             >
                 <!-- Required checkbox -->
                 <AppCheckbox
                     :id="`req-${product.id}`"
                     :checked="product.isRequired"
-                    class="accent-primary size-4 shrink-0 cursor-pointer"
+                    class="accent-primary size-5 shrink-0 cursor-pointer"
                     @update:checked="
                         (value) => handleRequiredChange(product, value)
                     "
@@ -109,7 +91,7 @@ function incrementQuantity(product: Product) {
                 <!-- Product name — tapping toggles the checkbox via <label for> -->
                 <label
                     :for="`req-${product.id}`"
-                    class="flex-1 cursor-pointer select-none"
+                    class="flex-1 min-w-0 py-2 break-words cursor-pointer select-none"
                     :class="{ 'font-medium': product.isRequired }"
                 >
                     {{ product.name }}
@@ -122,7 +104,7 @@ function incrementQuantity(product: Product) {
                 >
                     <button
                         type="button"
-                        class="h-6 w-6 rounded bg-secondary disabled:opacity-30 disabled:cursor-not-allowed p-0.5"
+                        class="size-9 rounded bg-secondary disabled:opacity-30 disabled:cursor-not-allowed p-1.5"
                         :disabled="product.requiredQuantity <= 1"
                         @click="decrementQuantity(product)"
                     >
@@ -148,7 +130,7 @@ function incrementQuantity(product: Product) {
 
                     <button
                         type="button"
-                        class="h-6 w-6 rounded bg-primary text-background p-0.5"
+                        class="size-9 rounded bg-primary text-background p-1.5"
                         @click="incrementQuantity(product)"
                     >
                         <svg

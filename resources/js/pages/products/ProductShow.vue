@@ -10,6 +10,7 @@ import AppButton from "@/components/ui/button/Button.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 import PriceChart from "@/components/products/PriceChart.vue"
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
 import { formatCurrency, formatDate } from "@/composables/formatHelpers"
 
 const props = defineProps<{
@@ -159,7 +160,7 @@ const chartPoints = computed(() =>
                 </form>
             </div>
             <div v-else class="flex min-h-10 items-center gap-2">
-                <h1 class="text-xl font-semibold flex-1 truncate px-3">{{ product.name }}</h1>
+                <h1 class="text-xl font-semibold flex-1 min-w-0 truncate px-3">{{ product.name }}</h1>
                 <AppButton
                     variant="ghost"
                     size="sm"
@@ -174,12 +175,12 @@ const chartPoints = computed(() =>
             <div class="grid grid-cols-2 gap-3">
                 <div class="rounded-lg border p-3">
                     <p class="text-xs text-muted-foreground">Veces comprado</p>
-                    <p class="text-2xl font-semibold">{{ stats.timesBought }}</p>
+                    <p class="text-xl sm:text-2xl font-semibold break-words">{{ stats.timesBought }}</p>
                 </div>
 
                 <div v-if="stats.averagePrice !== null" class="rounded-lg border p-3">
                     <p class="text-xs text-muted-foreground">Precio promedio</p>
-                    <p class="text-2xl font-semibold">
+                    <p class="text-xl sm:text-2xl font-semibold break-words">
                         {{ formatCurrency(stats.averagePrice) }}{{ unitSuffix }}
                     </p>
                 </div>
@@ -197,7 +198,7 @@ const chartPoints = computed(() =>
 
                 <div v-if="stats.totalSpent > 0" class="rounded-lg border p-3">
                     <p class="text-xs text-muted-foreground">Total gastado</p>
-                    <p class="text-2xl font-semibold">
+                    <p class="text-xl sm:text-2xl font-semibold break-words">
                         {{ formatCurrency(stats.totalSpent) }}
                     </p>
                 </div>
@@ -280,13 +281,18 @@ const chartPoints = computed(() =>
 
             <!-- Delete -->
             <div class="pt-4 border-t">
-                <AppButton
-                    variant="ghost"
-                    class="text-destructive hover:text-destructive"
-                    @click="deleteProduct"
+                <ConfirmDialog
+                    :title="`¿Eliminar ${product.name}?`"
+                    description="Dejará de aparecer en tus listas. Podrás restaurarlo desde Productos → Eliminados."
+                    @confirm="deleteProduct"
                 >
-                    Eliminar producto
-                </AppButton>
+                    <AppButton
+                        variant="ghost"
+                        class="text-destructive hover:text-destructive"
+                    >
+                        Eliminar producto
+                    </AppButton>
+                </ConfirmDialog>
             </div>
         </div>
     </AppLayout>

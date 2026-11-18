@@ -93,7 +93,7 @@ const { form: productForm, handleSubmit: handleNewProduct } =
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
             <div>
-                <h2 class="text-lg font-semibold flex justify-between">
+                <h2 class="text-lg font-semibold">
                     Lista de compras:
                     {{ formatDate(props.shoppingDay.date, "long") }}
                 </h2>
@@ -102,9 +102,9 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                 </small>
             </div>
             <header
-                class="text-xl sticky top-0 pt-2 pb-1 bg-background flex justify-between z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
+                class="text-xl sticky top-0 pt-2 pb-1 bg-background flex justify-between gap-3 z-10 border-b-2 border-white-c -mx-2 px-2 items-center"
             >
-                <span class="flex flex-col">
+                <span class="flex flex-col min-w-0">
                     <span>Total: <span>{{ formatCurrency(total) }}</span></span>
                     <span
                         v-if="calculatedTotal > 0 && totalDiff !== 0"
@@ -118,9 +118,15 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                         <span class="text-xs font-normal opacity-70">vs. anterior</span>
                     </span>
                 </span>
-                <label class="text-xs inline-flex items-center gap-1">
+                <label
+                    class="text-xs inline-flex items-center gap-2 py-2 shrink-0 select-none"
+                >
                     Ocultar comprados
-                    <input type="checkbox" v-model="hideChecked" />
+                    <input
+                        type="checkbox"
+                        class="size-5 accent-primary"
+                        v-model="hideChecked"
+                    />
                 </label>
             </header>
             <ShoppingList
@@ -144,7 +150,7 @@ const { form: productForm, handleSubmit: handleNewProduct } =
             </form>
 
             <div
-                class="flex gap-2 bottom-2 left-0 right-0 sticky mt-2 bg-background"
+                class="flex gap-2 bottom-0 left-0 right-0 sticky mt-2 py-2 bg-background [&>*]:h-11"
             >
                 <AppButton
                     :as="Link"
