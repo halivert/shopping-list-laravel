@@ -30,7 +30,10 @@ return new class extends Migration
                 DB::table('shopping_day_items')
                     ->whereIn('product_id', $productIds)
                     ->update([
-                        'quantity' => DB::raw('quantity / 1000'),
+                        // 1000.0, not 1000: SQLite stores whole decimals as
+                        // integers, so `450 / 1000` would be integer division
+                        // (0) instead of 0.45.
+                        'quantity' => DB::raw('quantity / 1000.0'),
                         'unit_price' => DB::raw('unit_price * 1000'),
                     ]);
 
