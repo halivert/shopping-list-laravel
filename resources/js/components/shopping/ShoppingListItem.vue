@@ -92,9 +92,20 @@ function handleApplyCalculated({
             'shopping-list-item flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5',
         ]"
     >
-        <span class="sm:basis-2/6 sm:shrink-0 slot break-words">
-            <slot />
-        </span>
+        <div
+            class="sm:basis-2/6 sm:shrink-0 flex items-baseline justify-between gap-2"
+        >
+            <span class="slot break-words min-w-0">
+                <slot />
+            </span>
+            <!-- Line total lives here, not inside the price input, so it never
+                 overlaps the typed price or the unit suffix -->
+            <span
+                v-if="total && quantity !== 1"
+                class="shrink-0 text-sm tabular-nums text-muted-foreground"
+                >{{ formatCurrency(total) }}</span
+            >
+        </div>
         <div class="flex-1 flex gap-2 items-center px-0.5 sm:justify-end">
             <div
                 v-if="!editCount"
@@ -170,7 +181,10 @@ function handleApplyCalculated({
             </form>
             <div class="relative flex-1 min-w-0 sm:max-w-48">
                 <AppInput
-                    class="bg-secondary invalid:text-red-600 invalid:saturate-200"
+                    :class="[
+                        'bg-secondary invalid:text-red-600 invalid:saturate-200',
+                        unit ? 'pr-10' : '',
+                    ]"
                     type="number"
                     inputmode="decimal"
                     :placeholder="lastPriceFormatted"
@@ -185,12 +199,6 @@ function handleApplyCalculated({
                     v-if="unit"
                     class="absolute top-1/2 -translate-y-1/2 right-2 text-xs text-muted-foreground pointer-events-none"
                     >/{{ unit }}</span
-                >
-
-                <span
-                    v-if="total && quantity !== 1"
-                    class="absolute top-1/2 -translate-y-1/2 right-10 bg-secondary px-1 rounded"
-                    >{{ formatCurrency(total) }}</span
                 >
             </div>
 
