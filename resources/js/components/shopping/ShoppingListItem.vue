@@ -105,7 +105,7 @@ function handleApplyCalculated({
                     class="size-9 rounded bg-secondary disabled:opacity-30 disabled:cursor-not-allowed p-1.5"
                     @click="updateQuantity(Math.ceil(quantity - 1))"
                     @contextmenu.prevent="context(() => updateQuantity(1))"
-                    :disabled="quantity === 1"
+                    :disabled="quantity <= 1"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

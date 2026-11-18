@@ -10,6 +10,7 @@ import AppButton from "@/components/ui/button/Button.vue"
 import AppInput from "@/components/ui/input/Input.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 import PriceChart from "@/components/products/PriceChart.vue"
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
 import { formatCurrency, formatDate } from "@/composables/formatHelpers"
 
 const props = defineProps<{
@@ -280,13 +281,18 @@ const chartPoints = computed(() =>
 
             <!-- Delete -->
             <div class="pt-4 border-t">
-                <AppButton
-                    variant="ghost"
-                    class="text-destructive hover:text-destructive"
-                    @click="deleteProduct"
+                <ConfirmDialog
+                    :title="`¿Eliminar ${product.name}?`"
+                    description="Dejará de aparecer en tus listas. Podrás restaurarlo desde Productos → Eliminados."
+                    @confirm="deleteProduct"
                 >
-                    Eliminar producto
-                </AppButton>
+                    <AppButton
+                        variant="ghost"
+                        class="text-destructive hover:text-destructive"
+                    >
+                        Eliminar producto
+                    </AppButton>
+                </ConfirmDialog>
             </div>
         </div>
     </AppLayout>

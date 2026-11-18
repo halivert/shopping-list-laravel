@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from "@inertiajs/vue3"
+import { Head, Link, router, useForm } from "@inertiajs/vue3"
 
 import type { Access } from "@/types/Access"
 import type { BreadcrumbItem } from "@/types"
@@ -8,6 +8,7 @@ import AppInput from "@/components/ui/input/Input.vue"
 import AppInputError from "@/components/InputError.vue"
 import AppLabel from "@/components/ui/label/Label.vue"
 import AppButton from "@/components/ui/button/Button.vue"
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,6 +30,12 @@ defineProps<{
 const addUserForm = useForm({
     email: "",
 })
+
+function removeAccess(access: Access) {
+    router.delete(route("products-share.destroy", access.id), {
+        preserveScroll: true,
+    })
+}
 
 function handleSubmit() {
     addUserForm.post(route("products-share.store"), {
@@ -89,15 +96,16 @@ function handleSubmit() {
                                 >
                             </span>
 
-                            <Link
-                                :href="
-                                    route('products-share.destroy', access.id)
-                                "
-                                method="delete"
-                                as="button"
-                                class="py-1 text-destructive"
-                                >Eliminar</Link
+                            <ConfirmDialog
+                                :title="`¿Dejar de compartir con ${access.user?.name ?? access.userEmail}?`"
+                                description="Ya no podrá ver ni editar tus productos."
+                                confirmLabel="Dejar de compartir"
+                                @confirm="removeAccess(access)"
                             >
+                                <button type="button" class="py-1 text-destructive">
+                                    Eliminar
+                                </button>
+                            </ConfirmDialog>
                         </div>
                     </li>
                 </ul>
@@ -118,15 +126,16 @@ function handleSubmit() {
                                 >)
                             </Link>
 
-                            <Link
-                                :href="
-                                    route('products-share.destroy', access.id)
-                                "
-                                method="delete"
-                                as="button"
-                                class="py-1 text-destructive"
-                                >Eliminar</Link
+                            <ConfirmDialog
+                                :title="`¿Quitar tu acceso a los productos de ${access.accessible?.name}?`"
+                                description="Para recuperarlo tendrán que volver a compartirlos contigo."
+                                confirmLabel="Quitar acceso"
+                                @confirm="removeAccess(access)"
                             >
+                                <button type="button" class="py-1 text-destructive">
+                                    Eliminar
+                                </button>
+                            </ConfirmDialog>
                         </div>
                     </li>
                 </ul>
@@ -158,18 +167,15 @@ function handleSubmit() {
                                     class="py-1"
                                     >Aceptar</Link
                                 >
-                                <Link
-                                    :href="
-                                        route(
-                                            'products-share.destroy',
-                                            access.id
-                                        )
-                                    "
-                                    method="delete"
-                                    as="button"
-                                    class="py-1"
-                                    >Rechazar</Link
+                                <ConfirmDialog
+                                    :title="`¿Rechazar la solicitud de ${access.accessible?.name}?`"
+                                    confirmLabel="Rechazar"
+                                    @confirm="removeAccess(access)"
                                 >
+                                    <button type="button" class="py-1">
+                                        Rechazar
+                                    </button>
+                                </ConfirmDialog>
                             </div>
                         </div>
                     </li>
