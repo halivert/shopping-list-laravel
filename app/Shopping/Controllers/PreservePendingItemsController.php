@@ -26,7 +26,8 @@ class PreservePendingItemsController extends Controller
             $pendingItems->each(function (ShoppingDayItem $item) {
                 $item->product->update([
                     'is_required' => true,
-                    'required_quantity' => (int) ($item->quantity ?: 1),
+                    // Products are required in whole units: 0.5 kg → 1
+                    'required_quantity' => max(1, (int) ceil($item->quantity ?? 1)),
                 ]);
             });
         });
