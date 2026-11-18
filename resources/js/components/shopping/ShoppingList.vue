@@ -129,7 +129,7 @@ onUnmounted(() => {
     <div class="flex flex-col flex-1 relative">
         <ul
             role="list"
-            class="max-w-full overflow-y-scroll space-y-4 mt-4 pt-1 p-1 overscroll-auto flex-1"
+            class="max-w-full divide-y mt-2 p-1 flex-1 [&>li]:py-3"
         >
             <li v-for="item in computedItems" :key="item.id">
                 <ShoppingListItem

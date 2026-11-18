@@ -40,7 +40,7 @@ function handleSubmit() {
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Compartir productos" />
-        <section class="px-4 py-2 max-w-prose space-y-3">
+        <section class="px-4 py-2 max-w-prose space-y-3 min-w-0">
             <h1 class="text-2xl">Compartir productos</h1>
 
             <p>
@@ -76,10 +76,10 @@ function handleSubmit() {
 
                 <ul>
                     <li v-for="access in sharedWith" :key="access.id">
-                        <div class="inline-flex justify-between w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 w-full">
                             <span>
                                 {{ access.user?.name }} (<span
-                                    class="text-gray-500"
+                                    class="text-gray-500 break-all"
                                     >{{ access.userEmail }}</span
                                 >)
                                 <span
@@ -95,6 +95,7 @@ function handleSubmit() {
                                 "
                                 method="delete"
                                 as="button"
+                                class="py-1 text-destructive"
                                 >Eliminar</Link
                             >
                         </div>
@@ -107,12 +108,12 @@ function handleSubmit() {
 
                 <ul>
                     <li v-for="access in sharedBy" :key="access.id">
-                        <div class="inline-flex justify-between w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 w-full">
                             <Link
                                 :href="route('products-share.show', access.id)"
                             >
                                 {{ access.accessible?.name }} (<span
-                                    class="text-gray-500"
+                                    class="text-gray-500 break-all"
                                     >{{ access.accessible?.email }}</span
                                 >)
                             </Link>
@@ -123,6 +124,7 @@ function handleSubmit() {
                                 "
                                 method="delete"
                                 as="button"
+                                class="py-1 text-destructive"
                                 >Eliminar</Link
                             >
                         </div>
@@ -135,10 +137,10 @@ function handleSubmit() {
 
                 <ul>
                     <li v-for="access in requests" :key="access.id">
-                        <div class="inline-flex justify-between w-full">
+                        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 w-full">
                             <span>
                                 {{ access.accessible?.name }} (<span
-                                    class="text-gray-500"
+                                    class="text-gray-500 break-all"
                                     >{{ access.accessible?.email }}</span
                                 >)
                             </span>
@@ -153,6 +155,7 @@ function handleSubmit() {
                                     "
                                     method="put"
                                     as="button"
+                                    class="py-1"
                                     >Aceptar</Link
                                 >
                                 <Link
@@ -164,6 +167,7 @@ function handleSubmit() {
                                     "
                                     method="delete"
                                     as="button"
+                                    class="py-1"
                                     >Rechazar</Link
                                 >
                             </div>

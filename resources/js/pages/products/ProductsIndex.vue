@@ -94,7 +94,7 @@ function handleAdd() {
                         :href="route('products.show', product.id)"
                         class="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors"
                     >
-                        <span class="flex-1 text-sm">{{ product.name }}</span>
+                        <span class="flex-1 min-w-0 text-sm break-words">{{ product.name }}</span>
                         <span
                             v-if="product.lastPrice"
                             class="text-sm text-muted-foreground tabular-nums"
@@ -122,7 +122,7 @@ function handleAdd() {
             </ul>
 
             <!-- Add product -->
-            <div class="px-3 py-2 border-t">
+            <div class="px-3 py-2 border-t sticky bottom-0 bg-background">
                 <form
                     class="inline-flex w-full h-10 gap-2"
                     @submit.prevent="handleAdd"

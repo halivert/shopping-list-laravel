@@ -139,7 +139,7 @@ onUnmounted(() => {
         <header
             class="px-3 py-2 sticky top-0 bg-background z-10 border-b space-y-0.5"
         >
-            <div class="flex justify-between items-center gap-3">
+            <div class="flex flex-wrap justify-between items-center gap-x-3 gap-y-2">
                 <div>
                     <span class="font-semibold">{{ articleCount }}</span>
                     {{ articleCount === 1 ? "artículo" : "artículos" }}
@@ -151,7 +151,9 @@ onUnmounted(() => {
                     </span>
                 </div>
 
-                <div class="flex gap-2 items-center">
+                <div
+                    class="flex gap-2 items-center w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-none"
+                >
                     <AppButton
                         variant="secondary"
                         @click="handleCreateShoppingDay(true)"

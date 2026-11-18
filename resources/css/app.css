@@ -78,6 +78,19 @@
   }
 }
 
+/* Avoid double-tap zoom on rapid taps (e.g. quantity steppers on iOS) */
+@layer base {
+  a,
+  button,
+  input,
+  label,
+  select,
+  textarea,
+  [role='button'] {
+    touch-action: manipulation;
+  }
+}
+
 @utility shopping-list-item {
   &.checked span.slot {
     @apply line-through;

@@ -102,8 +102,8 @@ function handleApply() {
             <AppButton
                 type="button"
                 variant="ghost"
-                size="sm"
-                class="aspect-square p-0 shrink-0"
+                size="icon"
+                class="size-10 shrink-0"
                 title="Calcular precio por unidad"
             >
                 <Calculator :size="16" />
@@ -126,6 +126,7 @@ function handleApply() {
                         id="price-paid"
                         v-model.number="pricePaid"
                         type="number"
+                        inputmode="decimal"
                         min="0"
                         step="0.01"
                         autofocus
@@ -140,6 +141,7 @@ function handleApply() {
                             v-model.number="packageSize"
                             class="flex-1"
                             type="number"
+                            inputmode="decimal"
                             min="0"
                             step="0.001"
                         />
