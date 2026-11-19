@@ -13,6 +13,7 @@ use App\Shopping\Requests\UpdateShoppingDayRequest;
 use App\Shopping\Resources\ShoppingDayResource;
 use App\Shopping\ShoppingDay;
 use App\Shopping\ShoppingDayItem;
+use App\Stores\LearnStoreOrder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,12 @@ class ShoppingDayController extends Controller
                 'date' => Carbon::parse($attrs['date']),
                 'store_id' => $attrs['store_id'] ?? $owner->defaultStore()->id,
             ]);
+
+            // Previous trips in this store are finished: learn their route
+            // before sorting the new day's items by the store order
+            if ($shoppingDay->store) {
+                (new LearnStoreOrder)($shoppingDay->store, $shoppingDay);
+            }
 
             if (! ($attrs['empty'] ?? false)) {
                 $requiredProducts = $owner->products()
@@ -186,6 +193,10 @@ class ShoppingDayController extends Controller
                         $item->save();
                     }
                 });
+            }
+
+            if (Arr::has($attrs, 'learnOrder')) {
+                $shoppingDay->update(['learn_order' => $attrs['learnOrder']]);
             }
 
             // Update shopping day date

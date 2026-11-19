@@ -2,6 +2,7 @@
 import { computed, ref } from "vue"
 import { Head, Link, useForm } from "@inertiajs/vue3"
 import type { Page, PageProps } from "@inertiajs/core"
+import { SwitchRoot, SwitchThumb } from "radix-vue"
 
 import type { BreadcrumbItem } from "@/types"
 import type { ShoppingDay } from "@/types/ShoppingDay"
@@ -16,6 +17,7 @@ import {
     formatShoppingDay,
 } from "@/composables/formatHelpers"
 import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
+import { useQueuedUpdates } from "@/composables/useQueuedUpdates"
 import { Product } from "@/types/Product"
 
 interface Props extends PageProps {
@@ -32,6 +34,20 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
         href: "",
     },
 ])
+
+// The store order learns from the order items are priced in. Turned off
+// when prices were entered after paying (no real route through the store).
+const learnOrder = ref(props.shoppingDay.learnOrder)
+
+const { queue: queueDayUpdate } = useQueuedUpdates<{ learnOrder: boolean }>(
+    (id) => route("shopping-days.update", { shoppingDay: id }),
+    { method: "put", delay: 300 }
+)
+
+function setLearnOrder(value: boolean) {
+    learnOrder.value = value
+    queueDayUpdate(props.shoppingDay.id, { learnOrder: value })
+}
 
 const total = ref(0)
 const calculatedTotal = ref(0)
@@ -104,6 +120,29 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                 <small v-if="shoppingDay.updatedAt">
                     (Actualizado: {{ formatDate(shoppingDay.updatedAt) }})
                 </small>
+                <div
+                    v-if="shoppingDay.store"
+                    class="flex items-center gap-2 min-h-9 text-sm"
+                >
+                    <SwitchRoot
+                        id="learn-order"
+                        :checked="learnOrder"
+                        class="w-12 h-7 px-0.5 shrink-0 focus-within:outline-solid focus-within:outline-secondary flex bg-primary/30 data-[state=checked]:bg-primary shadow-xs rounded-full relative cursor-default"
+                        @update:checked="setLearnOrder"
+                    >
+                        <SwitchThumb
+                            class="block size-6 my-auto bg-white shadow-xs rounded-full transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-5"
+                        />
+                    </SwitchRoot>
+                    <label for="learn-order" class="select-none">
+                        Aprender el orden de {{ shoppingDay.store.name }} de
+                        este recorrido
+                        <span class="block text-xs text-muted-foreground">
+                            Desactívalo si llenaste los precios después de
+                            pagar.
+                        </span>
+                    </label>
+                </div>
             </div>
             <header
                 class="text-xl sticky top-0 pt-2 pb-1 bg-background flex justify-between gap-3 z-10 border-b-2 border-white-c -mx-2 px-2 items-center"

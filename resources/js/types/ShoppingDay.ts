@@ -7,6 +7,8 @@ export interface ShoppingDay {
     date: string
     owner: User
     store?: Store
+    /** Whether this trip teaches the store order (see LearnStoreOrder) */
+    learnOrder: boolean
     items?: ShoppingDayItem[]
     updatedAt?: string
 }

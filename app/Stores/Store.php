@@ -4,12 +4,14 @@ namespace App\Stores;
 
 use App\Models\User;
 use App\Products\Product;
+use App\Shopping\ShoppingDay;
 use Database\Factories\StoreFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A store where the owner shops. Each store has its own shopping order
@@ -34,12 +36,20 @@ class Store extends Model
     }
 
     /**
+     * @return HasMany<ShoppingDay, Store>
+     */
+    public function shoppingDays(): HasMany
+    {
+        return $this->hasMany(ShoppingDay::class);
+    }
+
+    /**
      * @return BelongsToMany<Product, Store>
      */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'store_product')
-            ->withPivot('position');
+            ->withPivot('position', 'score');
     }
 
     /**
@@ -59,15 +69,21 @@ class Store extends Model
     }
 
     /**
-     * Replaces the store order with the given product ids, in order.
+     * Replaces the store order with the given product ids, in order. A
+     * manual order restarts learning: scores are spread evenly from 0 to 1.
      *
      * @param array<int, string> $productIds
      */
     public function sortProducts(array $productIds): void
     {
+        $last = max(count($productIds) - 1, 1);
+
         $this->products()->sync(
             collect($productIds)->values()->mapWithKeys(
-                fn (string $id, int $position) => [$id => ['position' => $position]]
+                fn (string $id, int $position) => [$id => [
+                    'position' => $position,
+                    'score' => $position / $last,
+                ]]
             )
         );
     }

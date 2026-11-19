@@ -21,6 +21,8 @@ class ShoppingDay extends Model
         'owner_id',
         'store_id',
         'date',
+        'learn_order',
+        'learned_at',
     ];
 
     protected $with = [
@@ -39,6 +41,8 @@ class ShoppingDay extends Model
     {
         return [
             'date' => 'date:Y-m-d',
+            'learn_order' => 'boolean',
+            'learned_at' => 'datetime',
         ];
     }
 
