@@ -47,12 +47,24 @@ class LearnStoreOrder
 
         DB::transaction(function () use ($store, $days) {
             $scores = $this->currentScores($store);
+            $learned = false;
 
             foreach ($days->where('learn_order', true) as $day) {
-                $scores = $this->learnTrip($scores, $this->route($day));
+                $route = $this->route($day);
+
+                if (count($route) < 2) {
+                    continue; // a single purchase has no order to learn
+                }
+
+                $scores = $this->learnTrip($scores, $route);
+                $learned = true;
             }
 
-            $this->save($store, $scores);
+            // Leave the store rows untouched when nothing was learned (e.g.
+            // the first days after deploying, without purchase times)
+            if ($learned) {
+                $this->save($store, $scores);
+            }
 
             ShoppingDay::query()
                 ->whereKey($days->modelKeys())
@@ -101,15 +113,11 @@ class LearnStoreOrder
 
     /**
      * @param array<string, float> $scores
-     * @param array<int, string> $route
+     * @param array<int, string> $route at least two products
      * @return array<string, float>
      */
     private function learnTrip(array $scores, array $route): array
     {
-        if (count($route) < 2) {
-            return $scores;
-        }
-
         $previous = $this->withNewcomers($scores, $route);
 
         // The scores the bought products already had, handed out again in

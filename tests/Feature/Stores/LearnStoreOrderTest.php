@@ -251,3 +251,21 @@ test('a trip not learned yet says so', function () {
         ->getJson(route('shopping-days.show', $day))
         ->assertJsonPath('learned', false);
 });
+
+test('a store is not rewritten when no trip teaches anything', function () {
+    [$store, $p] = storeWithOrder('A', 'B', 'C');
+    // As left by the initial store migration: shopping_index gaps, no score
+    DB::table('store_product')->where('store_id', $store->id)->update(['score' => null]);
+    DB::table('store_product')->where('product_id', $p['C']->id)->update(['position' => 9]);
+    $day = shopTrip($store, [$p['C']]); // a single purchase teaches nothing
+
+    startDayIn($store);
+
+    expect($store->positions())->toBe([
+        $p['A']->id => 0,
+        $p['B']->id => 1,
+        $p['C']->id => 9,
+    ]);
+    expect(DB::table('store_product')->whereNotNull('score')->count())->toBe(0);
+    expect($day->fresh()->learned_at)->not->toBeNull();
+});
