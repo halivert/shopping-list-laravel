@@ -10,7 +10,11 @@ import AppButton from "@/components/ui/button/Button.vue"
 import NewProductInput from "@/components/shopping/NewProductInput.vue"
 import ShoppingList from "@/components/shopping/ShoppingList.vue"
 import PreservePendingItems from "@/components/shopping/PreservePendingItems.vue"
-import { formatDate, formatCurrency } from "@/composables/formatHelpers"
+import {
+    formatCurrency,
+    formatDate,
+    formatShoppingDay,
+} from "@/composables/formatHelpers"
 import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
 import { Product } from "@/types/Product"
 
@@ -24,7 +28,7 @@ const props = defineProps<Props>()
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: "Inicio", href: "/" },
     {
-        title: `Día de compras: ${formatDate(props.shoppingDay.date)}`,
+        title: `Día de compras: ${formatShoppingDay(props.shoppingDay)}`,
         href: "",
     },
 ])
@@ -88,14 +92,14 @@ const { form: productForm, handleSubmit: handleNewProduct } =
 </script>
 
 <template>
-    <Head :title="`Día de compras: ${formatDate(props.shoppingDay.date)}`" />
+    <Head :title="`Día de compras: ${formatShoppingDay(props.shoppingDay)}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-2 py-1 flex gap-3 justify-between flex-col h-full">
             <div>
                 <h2 class="text-lg font-semibold">
                     Lista de compras:
-                    {{ formatDate(props.shoppingDay.date, "long") }}
+                    {{ formatShoppingDay(props.shoppingDay, "long") }}
                 </h2>
                 <small v-if="shoppingDay.updatedAt">
                     (Actualizado: {{ formatDate(shoppingDay.updatedAt) }})

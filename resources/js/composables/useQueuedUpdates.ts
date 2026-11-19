@@ -3,10 +3,10 @@ import { useHttp } from "@inertiajs/vue3"
 import { echo } from "@laravel/echo-vue"
 import { useDebounceFn } from "@vueuse/core"
 
-type Changes = Record<string, string | number | boolean | null>
+type Changes = Record<string, string | number | boolean | null | string[]>
 
 interface Options {
-    method?: "patch" | "put"
+    method?: "patch" | "put" | "post"
     delay?: number
 }
 

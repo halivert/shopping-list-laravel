@@ -6,6 +6,7 @@ use App\Shopping\ShoppingDay;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class StoreShoppingDayRequest extends FormRequest
 {
@@ -30,6 +31,13 @@ class StoreShoppingDayRequest extends FormRequest
         return [
             'date' => 'required|date_format:Y-m-d',
             'empty' => 'sometimes|boolean',
+            'store_id' => [
+                'sometimes',
+                'nullable',
+                'string',
+                Rule::exists('stores', 'id')
+                    ->where('owner_id', $this->route('owner')->id),
+            ],
         ];
     }
 }

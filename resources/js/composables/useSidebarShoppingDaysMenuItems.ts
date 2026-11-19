@@ -4,7 +4,7 @@ import { CalendarDays, Dot } from "lucide-vue-next"
 
 import type { ShoppingDay } from "@/types/ShoppingDay"
 import type { NavLinkItem } from "@/types"
-import { formatDate } from "./formatHelpers"
+import { formatShoppingDay } from "./formatHelpers"
 
 export function useSidebarShoppingDaysMenuItems(
     sidebarShoppingDays: MaybeRef<ShoppingDay[] | undefined>
@@ -55,7 +55,7 @@ export function useSidebarShoppingDaysMenuItems(
                           unref(sidebarShoppingDays)?.map(
                               (day): NavLinkItem => ({
                                   key: day.id,
-                                  title: formatDate(day.date, "long"),
+                                  title: formatShoppingDay(day, "long"),
                                   href: route(
                                       "shopping-days.show",
                                       {

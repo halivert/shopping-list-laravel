@@ -10,7 +10,7 @@ import type { Product } from "@/types/Product"
 import type { ShoppingDay } from "@/types/ShoppingDay"
 import AppButton from "@/components/ui/button/Button.vue"
 import NewProductInput from "@/components/shopping/NewProductInput.vue"
-import { formatCurrency, formatDate } from "@/composables/formatHelpers"
+import { formatCurrency, formatShoppingDay } from "@/composables/formatHelpers"
 import { useCreateNewProductToShoppingDay } from "@/composables/useCreateNewProductToShoppingDay"
 import { useEditShoppingDay } from "@/composables/useEditShoppingDay"
 import EditShoppingDayDateInput from "@/components/shopping/EditShoppingDayDateInput.vue"
@@ -31,7 +31,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
         href: "/",
     },
     {
-        title: `Día de compras: ${formatDate(shoppingDay.value.date)}`,
+        title: `Día de compras: ${formatShoppingDay(shoppingDay.value)}`,
         href: "",
     },
 ])
@@ -117,7 +117,7 @@ const estimatedTotal = computed(() =>
 </script>
 
 <template>
-    <Head :title="`Día de compras: ${formatDate(props.shoppingDay.date)}`" />
+    <Head :title="`Día de compras: ${formatShoppingDay(props.shoppingDay)}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <header class="p-3 top-0 sticky bg-background z-10 space-y-1">
@@ -128,7 +128,7 @@ const estimatedTotal = computed(() =>
                         v-model="editDateForm.date"
                         v-model:isEditing="editDate"
                     >
-                        {{ formatDate(shoppingDay.date, "full") }}
+                        {{ formatShoppingDay(shoppingDay, "full") }}
                     </EditShoppingDayDateInput>
                 </form>
 

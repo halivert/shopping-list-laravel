@@ -45,3 +45,14 @@ function something()
 {
     // ..
 }
+
+/**
+ * Gives $partner approved access to $owner's products (products-share).
+ */
+function grantProductsAccess(App\Models\User $partner, App\Models\User $owner): void
+{
+    $access = new App\Models\Access(['user_email' => $partner->email]);
+    $access->user()->associate($partner);
+    $access->accessible()->associate($owner);
+    $access->save();
+}

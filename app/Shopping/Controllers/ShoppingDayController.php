@@ -60,6 +60,7 @@ class ShoppingDayController extends Controller
         $shoppingDay = DB::transaction(function () use ($attrs, $owner) {
             $shoppingDay = $owner->shoppingDays()->create([
                 'date' => Carbon::parse($attrs['date']),
+                'store_id' => $attrs['store_id'] ?? null,
             ]);
 
             if (! ($attrs['empty'] ?? false)) {
@@ -70,7 +71,8 @@ class ShoppingDayController extends Controller
                 $itemsToCreate = $requiredProducts->map(
                     fn($product) => [
                         'product_id' => $product->id,
-                        'index' => $product->shopping_index ?? 0,
+                        'index' => $shoppingDay->itemIndexFor($product)
+                            ?? $shoppingDay->unsortedItemIndex(),
                         'quantity' => $product->required_quantity,
                     ]
                 );
@@ -249,7 +251,8 @@ class ShoppingDayController extends Controller
         $itemsToCreate = $dbProducts->map(
             fn($product) => [
                 'product_id' => $product->id,
-                'index' => $product->shopping_index ?? 0,
+                'index' => $shoppingDay->itemIndexFor($product)
+                    ?? $shoppingDay->unsortedItemIndex(),
                 'name' => $product->name,
                 'quantity' => str($product->name)
                     ->after('-')->toInteger() ?: 1,

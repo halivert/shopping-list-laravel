@@ -1,19 +1,26 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount } from "vue"
-import { Head, Link, useForm } from "@inertiajs/vue3"
-import { SwitchRoot, SwitchThumb } from "radix-vue"
-import { useDebounceFn } from "@vueuse/core"
+import { computed, ref } from "vue"
+import { Head, Link, router } from "@inertiajs/vue3"
+import { Pencil, Plus, Trash2 } from "lucide-vue-next"
 
 import type { BreadcrumbItem, User } from "@/types"
 import type { Product } from "@/types/Product"
+import type { StoreWithPositions } from "@/types/Store"
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
 import HeadingSmall from "@/components/HeadingSmall.vue"
-import SortableItemList from "@/components/SortableItemList.vue"
+import SortableItemList, { type Item } from "@/components/SortableItemList.vue"
+import StoreNameDialog from "@/components/stores/StoreNameDialog.vue"
+import AppButton from "@/components/ui/button/Button.vue"
+import { useQueuedUpdates } from "@/composables/useQueuedUpdates"
 import AppLayout from "@/layouts/AppLayout.vue"
 
 interface Props {
     owner: User
     products: Product[]
+    stores: StoreWithPositions[]
 }
+
+const props = defineProps<Props>()
 
 const breadcrumbs = computed((): BreadcrumbItem[] => [
     { title: "Inicio", href: "/" },
@@ -24,45 +31,122 @@ const breadcrumbs = computed((): BreadcrumbItem[] => [
     { title: "Ordenar", href: "#" },
 ])
 
-const props = defineProps<Props>()
+// ── Lists ─────────────────────────────────────────────────────────────────────
+// "search" is the search order; any other key is a store id (its layout).
 
-const updateProductsForm = useForm<{
-    products: Pick<Product, "id" | "name">[]
-    list: boolean
-}>({
-    products: props.products.toSorted(
-        (a, b) => (a.searchIndex ?? 0) - (b.searchIndex ?? 0)
-    ),
-    list: false,
-})
+const SEARCH = "search"
 
-const handleSort = useDebounceFn(function handleSort() {
-    updateProductsForm.cancel()
-    if (updateProductsForm.processing) return
+const selectedList = ref<string>(SEARCH)
 
-    updateProductsForm
-        .transform((data) => ({
-            products: data.products.map(({ id }) => id),
-            list: data.list ? "shopping_index" : "search_index",
-        }))
-        .post(route("users.products.store", { owner: props.owner }), {
-            async: true,
-            only: [],
-            preserveScroll: true,
-        })
-}, 500)
+const selectedStore = computed(() =>
+    props.stores.find((store) => store.id === selectedList.value)
+)
 
-function setList() {
-    const sortFn: (a: Product, b: Product) => number = updateProductsForm.list
-        ? (a, b) => (a.shoppingIndex ?? 0) - (b.shoppingIndex ?? 0)
-        : (a, b) => (a.searchIndex ?? 0) - (b.searchIndex ?? 0)
+/** Order saved in this session, per list, so switching tabs keeps edits. */
+const editedOrders = new Map<string, string[]>()
 
-    updateProductsForm.products = props.products.toSorted(sortFn)
+function savedOrder(list: string): Item[] {
+    if (list === SEARCH) {
+        return props.products.toSorted(
+            (a, b) => (a.searchIndex ?? 0) - (b.searchIndex ?? 0)
+        )
+    }
+
+    const positions =
+        props.stores.find((store) => store.id === list)?.positions ?? {}
+
+    // Products without position in this store go to the end, by name
+    return props.products.toSorted((a, b) => {
+        const posA = positions[a.id] ?? Infinity
+        const posB = positions[b.id] ?? Infinity
+
+        if (posA !== posB) return posA - posB
+
+        return a.name.localeCompare(b.name, "es")
+    })
 }
 
-onBeforeUnmount(() => {
-    updateProductsForm.cancel()
-})
+function orderFor(list: string): Item[] {
+    const edited = editedOrders.get(list)
+    if (!edited) return savedOrder(list)
+
+    const byId = new Map(props.products.map((p) => [p.id, p]))
+    const ordered = edited.flatMap((id) => byId.get(id) ?? [])
+
+    // Products created after the edit go to the end
+    const rest = props.products.filter((p) => !edited.includes(p.id))
+
+    return [...ordered, ...rest]
+}
+
+const items = ref<Item[]>(orderFor(SEARCH))
+
+function selectList(list: string) {
+    selectedList.value = list
+    items.value = orderFor(list)
+}
+
+// ── Saving ────────────────────────────────────────────────────────────────────
+
+const { queue: queueOrder } = useQueuedUpdates<{
+    products: string[]
+    list?: string
+}>(
+    (list) =>
+        list === SEARCH
+            ? route("users.products.store", { owner: props.owner.id })
+            : route("stores.products.store", { store: list }),
+    { method: "post", delay: 500 }
+)
+
+function handleSort(next: Item[] | undefined) {
+    if (!next) return
+
+    const list = selectedList.value
+    const ids = next.map(({ id }) => id)
+    const current = orderFor(list).map(({ id }) => id)
+
+    // The list also emits when a tab is selected: only save real changes
+    const unchanged =
+        ids.length === current.length &&
+        ids.every((id, i) => id === current[i])
+
+    if (unchanged) return
+
+    editedOrders.set(list, ids)
+
+    queueOrder(
+        list,
+        list === SEARCH
+            ? { products: ids, list: "search_index" }
+            : { products: ids }
+    )
+}
+
+// ── Stores ────────────────────────────────────────────────────────────────────
+
+function selectNewestStore() {
+    const newest = props.stores.at(-1)
+    if (newest) selectList(newest.id)
+}
+
+const deleting = ref(false)
+
+function deleteStore() {
+    const store = selectedStore.value
+    if (!store) return
+
+    router.delete(route("stores.destroy", { store: store.id }), {
+        preserveScroll: true,
+        only: ["stores"],
+        onStart: () => (deleting.value = true),
+        onFinish: () => (deleting.value = false),
+        onSuccess: () => {
+            editedOrders.delete(store.id)
+            selectList(SEARCH)
+        },
+    })
+}
 </script>
 
 <template>
@@ -89,41 +173,89 @@ onBeforeUnmount(() => {
             </div>
 
             <div
-                class="flex gap-2 items-center justify-center self-stretch px-3 py-2"
+                class="flex gap-2 items-center overflow-x-auto -mx-3 px-3 pb-1"
+                role="tablist"
+                aria-label="Orden"
             >
-                <label
-                    class="select-none flex-1 text-right"
-                    for="list"
-                    :class="{ 'opacity-0': updateProductsForm.list }"
+                <AppButton
+                    type="button"
+                    role="tab"
+                    class="shrink-0"
+                    :aria-selected="selectedList === SEARCH"
+                    :variant="selectedList === SEARCH ? 'default' : 'outline'"
+                    @click="selectList(SEARCH)"
                 >
-                    Orden de búsqueda
-                </label>
-                <SwitchRoot
-                    id="list"
-                    v-model:checked="updateProductsForm.list"
-                    @update:checked="setList"
-                    class="w-12 h-7 px-0.5 focus-within:outline-solid focus-within:outline-secondary flex bg-primary/50 shadow-xs rounded-full relative cursor-default"
+                    Búsqueda
+                </AppButton>
+
+                <AppButton
+                    v-for="store in stores"
+                    :key="store.id"
+                    type="button"
+                    role="tab"
+                    class="shrink-0"
+                    :aria-selected="selectedList === store.id"
+                    :variant="selectedList === store.id ? 'default' : 'outline'"
+                    @click="selectList(store.id)"
                 >
-                    <SwitchThumb
-                        class="block size-6 my-auto bg-white shadow-xs rounded-full transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-5"
-                    />
-                </SwitchRoot>
-                <label
-                    class="select-none flex-1 text-left"
-                    for="list"
-                    :class="{ 'opacity-0': !updateProductsForm.list }"
+                    {{ store.name }}
+                </AppButton>
+
+                <StoreNameDialog :owner="owner" @saved="selectNewestStore">
+                    <AppButton
+                        type="button"
+                        variant="ghost"
+                        class="shrink-0"
+                        aria-label="Nueva tienda"
+                    >
+                        <Plus class="size-4" />
+                        Tienda
+                    </AppButton>
+                </StoreNameDialog>
+            </div>
+
+            <p class="text-sm text-muted-foreground">
+                <template v-if="selectedStore">
+                    Orden de compras en {{ selectedStore.name }}. Los días de
+                    compras en esta tienda siguen este orden.
+                </template>
+                <template v-else>
+                    Orden en que aparecen los productos al buscarlos.
+                </template>
+            </p>
+
+            <div v-if="selectedStore" class="flex gap-2 justify-end">
+                <StoreNameDialog
+                    :key="selectedStore.id"
+                    :owner="owner"
+                    :store="selectedStore"
                 >
-                    Orden de compras
-                </label>
+                    <AppButton type="button" variant="outline">
+                        <Pencil class="size-4" />
+                        Renombrar
+                    </AppButton>
+                </StoreNameDialog>
+
+                <ConfirmDialog
+                    :title="`¿Eliminar la tienda ${selectedStore.name}?`"
+                    description="Se pierde su orden. Los días de compras de esta tienda se conservan, pero sin tienda."
+                    :processing="deleting"
+                    @confirm="deleteStore"
+                >
+                    <AppButton type="button" variant="outline">
+                        <Trash2 class="size-4" />
+                        Eliminar
+                    </AppButton>
+                </ConfirmDialog>
             </div>
 
             <section
                 class="w-3/4"
-                :class="{ 'text-right self-end': updateProductsForm.list }"
+                :class="{ 'text-right self-end': selectedStore }"
             >
                 <SortableItemList
-                    v-model="updateProductsForm.products"
-                    @update:modelValue="handleSort"
+                    v-model="items"
+                    @update:model-value="handleSort"
                 />
             </section>
         </section>

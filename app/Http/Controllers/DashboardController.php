@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ProductResource;
 use App\Products\Product;
+use App\Stores\Resources\StoreResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,6 +25,7 @@ class DashboardController extends Controller
             'products' => fn() => ProductResource::collection($products),
             'deletedProductNames' => fn() => $request->user()->products()->onlyTrashed()
                 ->orderBy('name')->pluck('name'),
+            'stores' => fn() => StoreResource::collection($request->user()->stores),
         ]);
     }
 }
