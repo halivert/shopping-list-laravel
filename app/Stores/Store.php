@@ -50,8 +50,8 @@ class Store extends Model
      */
     public function positions(): array
     {
-        return $this->products()->newPivotStatement()
-            ->where('store_id', $this->id)
+        // Pivot rows only: no join or Product models (and their owners)
+        return $this->products()->newPivotQuery()
             ->orderBy('position')
             ->pluck('position', 'product_id')
             ->map(fn ($position) => (int) $position)
