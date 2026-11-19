@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { Head, Link, router } from "@inertiajs/vue3"
+import { Head, Link, router, usePage } from "@inertiajs/vue3"
 import { Pencil, Plus, Trash2 } from "lucide-vue-next"
 
 import type { BreadcrumbItem, User } from "@/types"
@@ -36,7 +36,17 @@ const breadcrumbs = computed((): BreadcrumbItem[] => [
 
 const SEARCH = "search"
 
-const selectedList = ref<string>(SEARCH)
+// `?store=<id>` opens that store (links in the sidebar); `?store=new` opens
+// the create dialog
+const requestedStore = new URLSearchParams(
+    usePage().url.split("?")[1] ?? ""
+).get("store")
+
+const selectedList = ref<string>(
+    props.stores.some((store) => store.id === requestedStore)
+        ? requestedStore!
+        : SEARCH
+)
 
 const selectedStore = computed(() =>
     props.stores.find((store) => store.id === selectedList.value)
@@ -79,7 +89,7 @@ function orderFor(list: string): Item[] {
     return [...ordered, ...rest]
 }
 
-const items = ref<Item[]>(orderFor(SEARCH))
+const items = ref<Item[]>(orderFor(selectedList.value))
 
 function selectList(list: string) {
     selectedList.value = list
@@ -201,7 +211,11 @@ function deleteStore() {
                     {{ store.name }}
                 </AppButton>
 
-                <StoreNameDialog :owner="owner" @saved="selectNewestStore">
+                <StoreNameDialog
+                    :owner="owner"
+                    :default-open="requestedStore === 'new'"
+                    @saved="selectNewestStore"
+                >
                     <AppButton
                         type="button"
                         variant="ghost"

@@ -22,11 +22,13 @@ import AppLabel from "@/components/ui/label/Label.vue"
 const props = defineProps<{
     owner: User
     store?: Store
+    /** Open on mount (e.g. coming from "Nueva tienda" in the sidebar) */
+    defaultOpen?: boolean
 }>()
 
 const emit = defineEmits<{ saved: [] }>()
 
-const open = ref(false)
+const open = ref(props.defaultOpen ?? false)
 const form = useForm({ name: props.store?.name ?? "" })
 
 function submit() {

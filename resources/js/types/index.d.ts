@@ -2,6 +2,8 @@ import type { PageProps } from "@inertiajs/core"
 import type { LucideIcon } from "lucide-vue-next"
 import type { Config } from "ziggy-js"
 
+import type { Store } from "./Store"
+
 export interface Auth {
     user?: User
 }
@@ -45,9 +47,16 @@ export interface SharedData extends PageProps {
     ziggy: Config & { location: string }
 
     sidebarShoppingDays?: ShoppingDay[]
+    sidebarStores?: SidebarStores | null
     flash?: {
         deletedProduct?: DeletedProductFlash | null
     }
+}
+
+/** Stores listed in the sidebar and the owner whose sort page they open */
+export interface SidebarStores {
+    owner: User
+    stores: Store[]
 }
 
 export interface User {

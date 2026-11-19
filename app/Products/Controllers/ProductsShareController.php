@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Products\Product;
 use App\Products\Requests\StoreProductsShareRequest;
 use App\Shopping\Resources\ShoppingDayResource;
+use App\Stores\Resources\SidebarStores;
 use App\Stores\Resources\StoreResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -70,6 +71,7 @@ class ProductsShareController extends Controller
             'products' => fn() => ProductResource::collection($products),
             'user' => UserResource::make($accessible),
             'stores' => fn() => StoreResource::collection($accessible->stores),
+            'sidebarStores' => SidebarStores::for($accessible),
             'sidebarShoppingDays' => $lastAccessibleFiveShoppingDays
                 ? ShoppingDayResource::collection(
                     $lastAccessibleFiveShoppingDays

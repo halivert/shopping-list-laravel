@@ -6,6 +6,7 @@ import { ShoppingBasket } from "lucide-vue-next"
 import type { BreadcrumbItemType, NavItem } from "@/types"
 import AppLayout from "@/layouts/app/AppSidebarLayout.vue"
 import { useSidebarShoppingDaysMenuItems } from "@/composables/useSidebarShoppingDaysMenuItems"
+import { useSidebarStoresMenuItems } from "@/composables/useSidebarStoresMenuItems"
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[]
@@ -22,6 +23,10 @@ const { sidebarShoppingDaysMenuItems, sidebarShoppingDaysOwner } =
     useSidebarShoppingDaysMenuItems(
         computed(() => page.props.sidebarShoppingDays)
     )
+
+const { sidebarStoresMenuItems } = useSidebarStoresMenuItems(
+    computed(() => page.props.sidebarStores)
+)
 
 const productsLink = computed((): NavItem[] =>
     sidebarShoppingDaysOwner.value?.id === page.props.auth.user?.id
@@ -44,6 +49,7 @@ const productsLink = computed((): NavItem[] =>
 const sidebarMainItems = computed((): NavItem[] | undefined => [
     ...(props.sidebarMainItems ?? []),
     ...productsLink.value,
+    ...sidebarStoresMenuItems.value,
     ...sidebarShoppingDaysMenuItems.value,
 ])
 </script>

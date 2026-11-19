@@ -45,7 +45,7 @@ const page = usePage<SharedData>()
                     <SidebarMenuSubButton
                         as-child
                         v-for="subItem in item.items"
-                        :is-active="item.href === page.url"
+                        :is-active="subItem.href === page.url"
                         :key="subItem.key ?? subItem.title"
                         :tooltip="subItem.title"
                     >
