@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { usePage } from "@inertiajs/vue3"
-import { ShoppingBasket } from "lucide-vue-next"
 
 import type { BreadcrumbItemType, NavItem } from "@/types"
 import AppLayout from "@/layouts/app/AppSidebarLayout.vue"
+import { useSidebarProductsMenuItems } from "@/composables/useSidebarProductsMenuItems"
 import { useSidebarShoppingDaysMenuItems } from "@/composables/useSidebarShoppingDaysMenuItems"
-import { useSidebarStoresMenuItems } from "@/composables/useSidebarStoresMenuItems"
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[]
@@ -19,38 +18,22 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage()
 
-const { sidebarShoppingDaysMenuItems, sidebarShoppingDaysOwner } =
-    useSidebarShoppingDaysMenuItems(
-        computed(() => page.props.sidebarShoppingDays)
-    )
+const { sidebarShoppingDaysMenuItems } = useSidebarShoppingDaysMenuItems(
+    computed(() => page.props.sidebarShoppingDays)
+)
 
-const { sidebarStoresMenuItems } = useSidebarStoresMenuItems(
+// Always present: it follows the owner of the sidebar (own or shared),
+// not the shopping days, so it shows up before the first shopping day too
+const { sidebarProductsMenuItems } = useSidebarProductsMenuItems(
     computed(() => page.props.sidebarStores)
 )
 
-const productsLink = computed((): NavItem[] =>
-    sidebarShoppingDaysOwner.value?.id === page.props.auth.user?.id
-        ? [
-              {
-                  title: "Productos",
-                  href: route(
-                      "users.products.index",
-                      {
-                          owner: sidebarShoppingDaysOwner.value?.id,
-                      },
-                      false
-                  ),
-                  icon: ShoppingBasket,
-              },
-          ]
-        : []
-)
-
+// Shopping days first: the app is for shopping. Products (and their store
+// orders) below, as the reference to consult or fix.
 const sidebarMainItems = computed((): NavItem[] | undefined => [
     ...(props.sidebarMainItems ?? []),
-    ...productsLink.value,
-    ...sidebarStoresMenuItems.value,
     ...sidebarShoppingDaysMenuItems.value,
+    ...sidebarProductsMenuItems.value,
 ])
 </script>
 

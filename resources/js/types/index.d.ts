@@ -27,10 +27,14 @@ export interface NavGroupItem {
     key?: string
     title: string
     icon?: LucideIcon
+    /** Makes the group title a link */
+    href?: string
+    /** primary: big bold title; secondary (default): small muted label */
+    variant?: "primary" | "secondary"
+    /** Draws a separator before the group */
+    separated?: boolean
     items: NavLinkItem[]
     footer?: NavLinkItem
-
-    href?: never
 }
 
 export type NavItem = NavLinkItem | NavGroupItem

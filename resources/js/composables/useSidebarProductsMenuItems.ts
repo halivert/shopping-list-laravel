@@ -1,20 +1,21 @@
 import { computed, MaybeRef, unref } from "vue"
 import { usePage } from "@inertiajs/vue3"
-import { Dot, Plus, Store as StoreIcon } from "lucide-vue-next"
+import { Dot, Plus, ShoppingBasket } from "lucide-vue-next"
 
 import type { NavGroupItem, NavLinkItem, SidebarStores } from "@/types"
 
 /**
- * Sidebar group with the stores of the owner being shown; each one opens
- * the sort page on that store. "Nueva tienda" opens it with the create
- * dialog (`?store=new`).
+ * "Productos" section of the sidebar, for the owner being shown. Stores are
+ * its sub items: each one is a way of sorting the products, so it opens the
+ * sort page on that store; "Nueva tienda" opens it with the create dialog
+ * (`?store=new`).
  */
-export function useSidebarStoresMenuItems(
+export function useSidebarProductsMenuItems(
     sidebarStores: MaybeRef<SidebarStores | null | undefined>
 ) {
     const page = usePage()
 
-    const sidebarStoresMenuItems = computed((): NavGroupItem[] => {
+    const sidebarProductsMenuItems = computed((): NavGroupItem[] => {
         const data = unref(sidebarStores)
         if (!data) return []
 
@@ -26,12 +27,16 @@ export function useSidebarStoresMenuItems(
 
         return [
             {
-                title: isOwn ? "Tiendas" : `Tiendas de ${owner.name}`,
-                icon: StoreIcon,
+                key: "products",
+                title: isOwn ? "Productos" : `Productos de ${owner.name}`,
+                href: route("users.products.index", { owner: owner.id }, false),
+                icon: ShoppingBasket,
+                variant: "primary",
+                separated: true,
                 items: stores.map(
                     (store): NavLinkItem => ({
                         key: store.id,
-                        title: store.name,
+                        title: `Orden en ${store.name}`,
                         href: sortUrl(store.id),
                         icon: Dot,
                     })
@@ -45,5 +50,5 @@ export function useSidebarStoresMenuItems(
         ]
     })
 
-    return { sidebarStoresMenuItems }
+    return { sidebarProductsMenuItems }
 }
