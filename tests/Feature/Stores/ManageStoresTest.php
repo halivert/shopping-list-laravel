@@ -75,6 +75,7 @@ test('stranger cannot rename a store', function () {
 
 test('deleting a store keeps its shopping days without store', function () {
     $store = Store::factory()->create();
+    Store::factory()->create(['owner_id' => $store->owner_id]);
     $day = ShoppingDay::factory()->create([
         'owner_id' => $store->owner_id,
         'store_id' => $store->id,
@@ -87,6 +88,17 @@ test('deleting a store keeps its shopping days without store', function () {
     expect(Store::query()->find($store->id))->toBeNull();
     expect($day->fresh())->not->toBeNull()
         ->store_id->toBeNull();
+});
+
+test('the last store cannot be deleted', function () {
+    $store = Store::factory()->create();
+
+    $this->actingAs($store->owner)
+        ->deleteJson(route('stores.destroy', $store))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('store');
+
+    expect($store->fresh())->not->toBeNull();
 });
 
 test('stranger cannot delete a store', function () {

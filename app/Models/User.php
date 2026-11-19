@@ -46,6 +46,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Store used when none is chosen: the first one, or "Mi tienda" when the
+     * user has none yet. Every shopping day belongs to a store.
+     */
+    public function defaultStore(): Store
+    {
+        return $this->stores()->first()
+            ?? $this->stores()->create(['name' => 'Mi tienda']);
+    }
+
+    /**
      * @return MorphMany<Access, User>
      */
     public function sharedWith(): MorphMany

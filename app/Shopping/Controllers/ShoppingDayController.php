@@ -60,7 +60,7 @@ class ShoppingDayController extends Controller
         $shoppingDay = DB::transaction(function () use ($attrs, $owner) {
             $shoppingDay = $owner->shoppingDays()->create([
                 'date' => Carbon::parse($attrs['date']),
-                'store_id' => $attrs['store_id'] ?? null,
+                'store_id' => $attrs['store_id'] ?? $owner->defaultStore()->id,
             ]);
 
             if (! ($attrs['empty'] ?? false)) {

@@ -23,12 +23,34 @@ test('starting a shopping day in a store saves the store', function () {
     expect(ShoppingDay::query()->sole()->store_id)->toBe($store->id);
 });
 
-test('starting a shopping day without store keeps it without store', function () {
+test('starting a shopping day without store uses the first store', function () {
+    $first = Store::factory()->create(['name' => '3B']);
+    Store::factory()->create(['owner_id' => $first->owner_id, 'name' => 'Aurrera']);
+
+    startShoppingDay($first->owner, $first->owner)->assertRedirect();
+
+    expect(ShoppingDay::query()->sole()->store_id)->toBe($first->id);
+});
+
+test('starting a shopping day without any store creates "Mi tienda"', function () {
     $user = User::factory()->create();
 
     startShoppingDay($user, $user)->assertRedirect();
 
-    expect(ShoppingDay::query()->sole()->store_id)->toBeNull();
+    $store = $user->stores()->sole();
+    expect($store->name)->toBe('Mi tienda');
+    expect(ShoppingDay::query()->sole()->store_id)->toBe($store->id);
+});
+
+test('a partner starting a day for an owner without stores creates it for the owner', function () {
+    $owner = User::factory()->create();
+    $partner = User::factory()->create();
+    grantProductsAccess($partner, $owner);
+
+    startShoppingDay($partner, $owner)->assertRedirect();
+
+    expect($owner->stores()->count())->toBe(1);
+    expect($partner->stores()->count())->toBe(0);
 });
 
 test('items of a store shopping day follow the store order', function () {

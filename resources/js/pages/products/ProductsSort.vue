@@ -242,7 +242,16 @@ function deleteStore() {
                     :processing="deleting"
                     @confirm="deleteStore"
                 >
-                    <AppButton type="button" variant="outline">
+                    <AppButton
+                        type="button"
+                        variant="outline"
+                        :disabled="stores.length <= 1"
+                        :title="
+                            stores.length <= 1
+                                ? 'Debe quedar al menos una tienda'
+                                : undefined
+                        "
+                    >
                         <Trash2 class="size-4" />
                         Eliminar
                     </AppButton>

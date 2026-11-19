@@ -10,6 +10,7 @@ use App\Stores\Store;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class StoreController extends Controller
 {
@@ -34,6 +35,13 @@ class StoreController extends Controller
     public function destroy(Request $request, Store $store): JsonResponse|RedirectResponse
     {
         $this->authorize('delete', $store);
+
+        // Every new shopping day needs a store
+        if ($store->owner->stores()->count() <= 1) {
+            throw ValidationException::withMessages([
+                'store' => 'No puedes eliminar la única tienda.',
+            ]);
+        }
 
         $store->delete();
 
