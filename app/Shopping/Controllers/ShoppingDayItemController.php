@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ShoppingDayItemController extends Controller
@@ -70,6 +71,14 @@ class ShoppingDayItemController extends Controller
         ShoppingDayItem $shoppingDayItem
     ): JsonResponse|RedirectResponse {
         $attrs = $request->validated();
+
+        // With poor signal the request can arrive long after the price was
+        // entered: prefer the phone's time for the first purchase time. The
+        // saving hook keeps it, or clears it when the item has no price.
+        if (isset($attrs['pricedAt']) && $shoppingDayItem->purchased_at === null) {
+            $shoppingDayItem->purchased_at = Carbon::parse($attrs['pricedAt'])
+                ->setTimezone(config('app.timezone'));
+        }
 
         $shoppingDayItem->update([
             'unit_price' => Arr::get(

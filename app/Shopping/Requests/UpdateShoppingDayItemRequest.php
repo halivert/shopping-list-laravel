@@ -25,6 +25,13 @@ class UpdateShoppingDayItemRequest extends FormRequest
     {
         return [
             'unitPrice' => 'sometimes|nullable|numeric|min:0',
+            // When the price was entered on the phone (see ShoppingDayItem
+            // purchased_at); a few minutes of tolerance for its clock
+            'pricedAt' => [
+                'sometimes',
+                'date',
+                'before_or_equal:'.now()->addMinutes(5)->toIso8601String(),
+            ],
             'quantity' => 'sometimes|numeric'
         ];
     }

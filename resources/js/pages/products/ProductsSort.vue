@@ -230,8 +230,9 @@ function deleteStore() {
 
             <p class="text-sm text-muted-foreground">
                 <template v-if="selectedStore">
-                    Orden de compras en {{ selectedStore.name }}. Los días de
-                    compras en esta tienda siguen este orden.
+                    Orden de compras en {{ selectedStore.name }}. Se ajusta
+                    solo con el orden en que marcas los productos al comprar;
+                    arrastra para corregirlo más rápido.
                 </template>
                 <template v-else>
                     Orden en que aparecen los productos al buscarlos.

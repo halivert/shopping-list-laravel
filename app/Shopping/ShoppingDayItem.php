@@ -21,6 +21,7 @@ class ShoppingDayItem extends Model
         'index',
         'unit_price',
         'quantity',
+        'purchased_at',
     ];
 
     protected $with = [
@@ -33,7 +34,29 @@ class ShoppingDayItem extends Model
             'index' => 'integer',
             'unit_price' => 'double',
             'quantity' => 'double',
+            'purchased_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Records when the item was first priced: the sequence of purchases is
+     * the route through the store. Correcting a price keeps the time;
+     * removing it (null or 0, an unchecked item in the list) means the item
+     * was not bought.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (ShoppingDayItem $item) {
+            if (! $item->isDirty(['unit_price', 'purchased_at'])) {
+                return;
+            }
+
+            if ($item->unit_price > 0) {
+                $item->purchased_at ??= now();
+            } else {
+                $item->purchased_at = null;
+            }
+        });
     }
 
     /**

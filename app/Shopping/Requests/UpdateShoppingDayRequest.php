@@ -27,6 +27,10 @@ class UpdateShoppingDayRequest extends FormRequest
         return [
             'touch' => 'sometimes|boolean',
             'date' => 'sometimes|date_format:Y-m-d',
+            // Pointless once the trip was learned
+            'learnOrder' => $this->shoppingDay->learned_at
+                ? 'prohibited'
+                : 'sometimes|boolean',
 
             'products' => 'sometimes|array',
             'products.*' => [
