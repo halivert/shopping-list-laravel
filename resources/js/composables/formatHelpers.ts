@@ -23,6 +23,19 @@ export function formatDate(
 }
 
 /**
+ * Date of a shopping day followed by its store, e.g. "18 de noviembre · 3B",
+ * so two days with the same date can be told apart.
+ */
+export function formatShoppingDay(
+    shoppingDay: { date: string; store?: { name: string } },
+    style: "medium" | "full" | "long" | "short" = "medium"
+): string {
+    const date = formatDate(shoppingDay.date, style)
+
+    return shoppingDay.store ? `${date} · ${shoppingDay.store.name}` : date
+}
+
+/**
  * Parses a date-only string (e.g. "2026-08-07") as a local calendar date
  * rather than a UTC instant — `new Date("2026-08-07")` is UTC midnight, which
  * renders as the previous day in negative-offset timezones. Full ISO strings

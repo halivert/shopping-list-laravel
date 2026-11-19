@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Shopping\Resources\ShoppingDayResource;
+use App\Stores\Resources\SidebarStores;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Inertia\Middleware;
@@ -48,6 +49,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarShoppingDays' => $lastFiveShoppingDays
                 ? fn() => ShoppingDayResource::collection($lastFiveShoppingDays)
+                : null,
+            'sidebarStores' => $request->user()
+                ? SidebarStores::for($request->user())
                 : null,
             'flash' => [
                 'deletedProduct' => $request->session()->get('deletedProduct'),

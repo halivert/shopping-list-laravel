@@ -3,6 +3,7 @@ import { Head, Link } from "@inertiajs/vue3"
 
 import type { BreadcrumbItem } from "@/types"
 import type { Product } from "@/types/Product"
+import type { Store } from "@/types/Store"
 import AppLayout from "@/layouts/AppLayout.vue"
 import AppButton from "@/components/ui/button/Button.vue"
 import ProductChecklistView from "@/components/products/ProductChecklistView.vue"
@@ -17,6 +18,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 defineProps<{
     products: Product[]
     deletedProductNames: string[]
+    stores: Store[]
 }>()
 </script>
 
@@ -27,6 +29,7 @@ defineProps<{
         <ProductChecklistView
             :products="products"
             :deleted-product-names="deletedProductNames"
+            :stores="stores"
         >
             <template #footer>
                 <div class="px-3 py-2 flex justify-end">

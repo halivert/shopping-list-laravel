@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Products\Product;
 use App\Shopping\ShoppingDay;
+use App\Stores\Store;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +35,24 @@ class User extends Authenticatable
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'owner_id');
+    }
+
+    /**
+     * @return HasMany<Store, User>
+     */
+    public function stores(): HasMany
+    {
+        return $this->hasMany(Store::class, 'owner_id')->oldest();
+    }
+
+    /**
+     * Store used when none is chosen: the first one, or "Mi tienda" when the
+     * user has none yet. Every shopping day belongs to a store.
+     */
+    public function defaultStore(): Store
+    {
+        return $this->stores()->first()
+            ?? $this->stores()->create(['name' => 'Mi tienda']);
     }
 
     /**

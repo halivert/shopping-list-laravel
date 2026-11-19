@@ -40,7 +40,8 @@ class NewProductToShoppingDayController extends Controller
                 return $shoppingDay->items()->firstOrCreate(
                     ['product_id' => $product->id],
                     [
-                        'index' => $product->shopping_index ?? ($lastItem?->index ? $lastItem->index + 1 : 0),
+                        'index' => $shoppingDay->itemIndexFor($product)
+                            ?? ($lastItem?->index ? $lastItem->index + 1 : 0),
                         'quantity' => str($product->name)->after('-')
                             ->toInteger() ?: 1,
                     ]

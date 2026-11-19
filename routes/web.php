@@ -19,3 +19,4 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/products.php';
 require __DIR__ . '/shopping.php';
+require __DIR__ . '/stores.php';

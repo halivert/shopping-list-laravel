@@ -5,6 +5,7 @@ import { useEcho } from "@laravel/echo-vue"
 
 import type { Product } from "@/types/Product"
 import type { User } from "@/types"
+import type { Store } from "@/types/Store"
 import AppButton from "@/components/ui/button/Button.vue"
 import ProductChecklist from "@/components/products/ProductChecklist.vue"
 import { useQueuedUpdates } from "@/composables/useQueuedUpdates"
@@ -15,9 +16,11 @@ const props = withDefaults(
         products: Product[]
         owner?: User
         deletedProductNames?: string[]
+        stores?: Store[]
     }>(),
     {
         deletedProductNames: () => [],
+        stores: () => [],
     }
 )
 
@@ -83,6 +86,43 @@ function onChangeRequired(productId: string, required: boolean) {
     queueProductUpdate(productId, { is_required: required })
 }
 
+// ── Store ─────────────────────────────────────────────────────────────────────
+// The new day's items follow the chosen store's order. The choice is
+// remembered per list in this browser only (a convenience, not shared).
+
+const storeKey = computed(() => `shopping-day-store.${ownerId.value}`)
+
+function readRememberedStore(): string | null {
+    try {
+        return localStorage.getItem(storeKey.value)
+    } catch {
+        return null
+    }
+}
+
+const selectedStoreId = ref<string | null>(readRememberedStore())
+
+// Fall back to the first store when the remembered one no longer exists
+watch(
+    () => props.stores,
+    (stores) => {
+        if (!stores.some((store) => store.id === selectedStoreId.value)) {
+            selectedStoreId.value = stores.at(0)?.id ?? null
+        }
+    },
+    { immediate: true }
+)
+
+function selectStore(storeId: string) {
+    selectedStoreId.value = storeId
+
+    try {
+        localStorage.setItem(storeKey.value, storeId)
+    } catch {
+        // Storage unavailable (private mode…): just don't remember it
+    }
+}
+
 // ── Start shopping day ────────────────────────────────────────────────────────
 
 async function handleCreateShoppingDay(empty = false) {
@@ -92,7 +132,11 @@ async function handleCreateShoppingDay(empty = false) {
 
     router.post(
         route("users.shopping-days.store", { owner: ownerId.value }),
-        { date: toLocalDateString(), empty }
+        {
+            date: toLocalDateString(),
+            empty,
+            store_id: selectedStoreId.value,
+        }
     )
 }
 
@@ -166,6 +210,32 @@ onUnmounted(() => {
                         Empezar día de compras
                     </AppButton>
                 </div>
+            </div>
+
+            <div
+                v-if="stores.length > 1"
+                class="flex items-center gap-2 py-1 overflow-x-auto"
+                role="radiogroup"
+                aria-label="Tienda"
+            >
+                <span class="text-sm text-muted-foreground shrink-0">
+                    Tienda:
+                </span>
+                <AppButton
+                    v-for="store in stores"
+                    :key="store.id"
+                    type="button"
+                    size="sm"
+                    role="radio"
+                    class="min-h-9 shrink-0"
+                    :aria-checked="selectedStoreId === store.id"
+                    :variant="
+                        selectedStoreId === store.id ? 'default' : 'outline'
+                    "
+                    @click="selectStore(store.id)"
+                >
+                    {{ store.name }}
+                </AppButton>
             </div>
 
             <div

@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Products\Product;
 use App\Products\Requests\UpdateUserProductsRequest;
+use App\Stores\Store;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -44,6 +45,12 @@ class UserProductsController extends Controller
         return Inertia::render('products/ProductsSort', [
             'owner'    => UserResource::make($owner),
             'products' => fn() => ProductResource::collection($owner->products),
+            'stores'   => fn() => $owner->stores->map(fn(Store $store) => [
+                'id'        => $store->id,
+                'name'      => $store->name,
+                // Object keyed by product id; (object) keeps {} when empty
+                'positions' => (object) $store->positions(),
+            ]),
         ]);
     }
 

@@ -2,6 +2,8 @@ import type { PageProps } from "@inertiajs/core"
 import type { LucideIcon } from "lucide-vue-next"
 import type { Config } from "ziggy-js"
 
+import type { Store } from "./Store"
+
 export interface Auth {
     user?: User
 }
@@ -25,10 +27,14 @@ export interface NavGroupItem {
     key?: string
     title: string
     icon?: LucideIcon
+    /** Makes the group title a link */
+    href?: string
+    /** primary: big bold title; secondary (default): small muted label */
+    variant?: "primary" | "secondary"
+    /** Draws a separator before the group */
+    separated?: boolean
     items: NavLinkItem[]
     footer?: NavLinkItem
-
-    href?: never
 }
 
 export type NavItem = NavLinkItem | NavGroupItem
@@ -45,9 +51,16 @@ export interface SharedData extends PageProps {
     ziggy: Config & { location: string }
 
     sidebarShoppingDays?: ShoppingDay[]
+    sidebarStores?: SidebarStores | null
     flash?: {
         deletedProduct?: DeletedProductFlash | null
     }
+}
+
+/** Stores listed in the sidebar and the owner whose sort page they open */
+export interface SidebarStores {
+    owner: User
+    stores: Store[]
 }
 
 export interface User {

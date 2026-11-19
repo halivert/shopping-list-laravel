@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Products\Product;
 use App\Products\Requests\StoreProductsShareRequest;
 use App\Shopping\Resources\ShoppingDayResource;
+use App\Stores\Resources\SidebarStores;
+use App\Stores\Resources\StoreResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,6 +70,8 @@ class ProductsShareController extends Controller
         return Inertia::render('products/SharedProducts', [
             'products' => fn() => ProductResource::collection($products),
             'user' => UserResource::make($accessible),
+            'stores' => fn() => StoreResource::collection($accessible->stores),
+            'sidebarStores' => SidebarStores::for($accessible),
             'sidebarShoppingDays' => $lastAccessibleFiveShoppingDays
                 ? ShoppingDayResource::collection(
                     $lastAccessibleFiveShoppingDays

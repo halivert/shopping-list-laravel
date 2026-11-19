@@ -6,7 +6,10 @@ import type { BreadcrumbItem, Paginator, User } from "@/types"
 import type { ShoppingDay } from "@/types/ShoppingDay"
 import type { ShoppingDayItem } from "@/types/ShoppingDayItem"
 import AppLayout from "@/layouts/AppLayout.vue"
-import { formatCurrency, formatDate } from "@/composables/formatHelpers"
+import {
+    formatCurrency,
+    formatShoppingDay,
+} from "@/composables/formatHelpers"
 
 interface Props {
     owner: User
@@ -102,7 +105,7 @@ const nextLinkProps = computed((): InertiaLinkProps & ExtraLinkProps => ({
                                     })
                                 "
                             >
-                                {{ formatDate(shoppingDay.date, "long") }}
+                                {{ formatShoppingDay(shoppingDay, "long") }}
                             </Link>
                         </td>
                         <td class="px-2 py-1 border border-primary text-center">
