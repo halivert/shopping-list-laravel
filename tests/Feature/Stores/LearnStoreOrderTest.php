@@ -225,3 +225,29 @@ test('learning can be turned off for a shopping day', function () {
 
     expect($day->fresh()->learn_order)->toBeFalse();
 });
+
+test('a learned trip says so and its switch can no longer change', function () {
+    [$store, $p] = storeWithOrder('A', 'B');
+    $day = shopTrip($store, [$p['B'], $p['A']]);
+    startDayIn($store);
+
+    $this->actingAs($store->owner)
+        ->getJson(route('shopping-days.show', $day))
+        ->assertJsonPath('learned', true);
+
+    $this->actingAs($store->owner)
+        ->putJson(route('shopping-days.update', $day), ['learnOrder' => false])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('learnOrder');
+
+    expect($day->fresh()->learn_order)->toBeTrue();
+});
+
+test('a trip not learned yet says so', function () {
+    [$store, $p] = storeWithOrder('A', 'B');
+    $day = shopTrip($store, [$p['B'], $p['A']]);
+
+    $this->actingAs($store->owner)
+        ->getJson(route('shopping-days.show', $day))
+        ->assertJsonPath('learned', false);
+});

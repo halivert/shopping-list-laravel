@@ -47,7 +47,7 @@ class ShoppingDayItem extends Model
     protected static function booted(): void
     {
         static::saving(function (ShoppingDayItem $item) {
-            if (! $item->isDirty('unit_price')) {
+            if (! $item->isDirty(['unit_price', 'purchased_at'])) {
                 return;
             }
 

@@ -108,3 +108,57 @@ test('a zero price counts as not purchased, like the unchecked item in the list'
     priceItem($item, 0)->assertNoContent();
     expect($item->fresh()->purchased_at)->toBeNull();
 });
+
+/*
+ * With poor signal in the store a price can reach the server much later
+ * (failed saves are retried on the next edit or when leaving the page), so
+ * the phone sends when the price was entered.
+ */
+
+function priceItemAt(ShoppingDayItem $item, ?float $price, string $pricedAt)
+{
+    return test()->actingAs($item->shoppingDay->owner)->patchJson(
+        route('shopping-days.items.update', [
+            'shoppingDay' => $item->shopping_day_id,
+            'shoppingDayItem' => $item,
+        ]),
+        ['unitPrice' => $price, 'pricedAt' => $pricedAt]
+    );
+}
+
+test('the purchase time comes from the phone when it is sent', function () {
+    $item = unpricedItem();
+    $this->travelTo('2026-11-18 10:30:00');
+
+    priceItemAt($item, 25, '2026-11-18T10:12:05Z')->assertNoContent();
+
+    expect($item->fresh()->purchased_at->utc()->toDateTimeString())
+        ->toBe('2026-11-18 10:12:05');
+});
+
+test('a later phone time does not replace the first purchase time', function () {
+    $item = unpricedItem();
+    priceItemAt($item, 25, '2026-11-18T10:12:05Z');
+
+    priceItemAt($item, 27, '2026-11-18T10:20:00Z')->assertNoContent();
+
+    expect($item->fresh()->purchased_at->utc()->toDateTimeString())
+        ->toBe('2026-11-18 10:12:05');
+});
+
+test('a phone time without a price does not mark the item as purchased', function () {
+    $item = unpricedItem();
+
+    priceItemAt($item, 0, '2026-11-18T10:12:05Z')->assertNoContent();
+
+    expect($item->fresh()->purchased_at)->toBeNull();
+});
+
+test('a phone time in the future is rejected', function () {
+    $item = unpricedItem();
+    $this->travelTo('2026-11-18 10:00:00');
+
+    priceItemAt($item, 25, '2026-11-18T11:00:00Z')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('pricedAt');
+});

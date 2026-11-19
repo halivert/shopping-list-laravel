@@ -55,6 +55,7 @@ watchEffect(() => {
 const { queue: queueItemUpdate } = useQueuedUpdates<{
     unitPrice: number
     quantity: number
+    pricedAt: string
 }>((itemId) =>
     route("shopping-days.items.update", {
         shoppingDay: props.shoppingDay.id,
@@ -62,7 +63,26 @@ const { queue: queueItemUpdate } = useQueuedUpdates<{
     })
 )
 
+// When an item is first priced, the time it was entered is sent along: it
+// is the order of the route through the store (see LearnStoreOrder), and a
+// save that fails for lack of signal is retried later. Corrections don't
+// send it, so a retried first price keeps its original time.
+const pricedItemIds = new Set(
+    model.value?.filter((item) => item.unitPrice > 0).map(({ id }) => id)
+)
+
 function handleUpdateUnitPrice(itemId: string, unitPrice: number) {
+    if (unitPrice > 0 && !pricedItemIds.has(itemId)) {
+        pricedItemIds.add(itemId)
+        queueItemUpdate(itemId, {
+            unitPrice,
+            pricedAt: new Date().toISOString(),
+        })
+        return
+    }
+
+    if (unitPrice <= 0) pricedItemIds.delete(itemId)
+
     queueItemUpdate(itemId, { unitPrice })
 }
 

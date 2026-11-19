@@ -121,7 +121,7 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                     (Actualizado: {{ formatDate(shoppingDay.updatedAt) }})
                 </small>
                 <div
-                    v-if="shoppingDay.store"
+                    v-if="shoppingDay.store && !shoppingDay.learned"
                     class="flex items-center gap-2 min-h-9 text-sm"
                 >
                     <SwitchRoot

@@ -24,6 +24,8 @@ class ShoppingDayResource extends JsonResource
                 $this->store ? StoreResource::make($this->store) : null
             ),
             'learnOrder' => $this->learn_order ?? true,
+            // Already learned (when the next day in its store started)
+            'learned' => $this->learned_at !== null,
             'items' => ShoppingDayItemResource::collection(
                 $this->whenLoaded('items')
             ),
