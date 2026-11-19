@@ -68,8 +68,7 @@ class LearnStoreOrder
      */
     private function currentScores(Store $store): array
     {
-        $rows = DB::table('store_product')
-            ->where('store_id', $store->id)
+        $rows = $store->products()->newPivotQuery()
             ->orderBy('position')
             ->get(['product_id', 'score']);
 
