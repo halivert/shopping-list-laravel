@@ -127,11 +127,11 @@ const { form: productForm, handleSubmit: handleNewProduct } =
                     <SwitchRoot
                         id="learn-order"
                         :checked="learnOrder"
-                        class="w-12 h-7 px-0.5 shrink-0 focus-within:outline-solid focus-within:outline-secondary flex bg-primary/30 data-[state=checked]:bg-primary shadow-xs rounded-full relative cursor-default"
+                        class="w-12 h-7 px-0.5 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background flex bg-input data-[state=checked]:bg-primary shadow-xs rounded-full relative cursor-default transition-colors"
                         @update:checked="setLearnOrder"
                     >
                         <SwitchThumb
-                            class="block size-6 my-auto bg-white shadow-xs rounded-full transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-5"
+                            class="block size-6 my-auto bg-background shadow-sm rounded-full transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-5"
                         />
                     </SwitchRoot>
                     <label for="learn-order" class="select-none">
